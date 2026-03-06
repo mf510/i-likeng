@@ -1,0 +1,229 @@
+﻿<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>English Tense Puzzle - International Edition</title>
+<style>
+:root { --main: #007bff; --accent: #ff4757; --part: #2ed573; --aux: #ffa502; }
+body{font-family:'Segoe UI',Meiryo,sans-serif;background-color:#f0f2f5;padding:20px;color:#1c1e21;margin:0}
+.container{max-width:600px;margin:auto;background:white;padding:25px;border-radius:20px;box-shadow:0 10px 25px rgba(0,0,0,0.1)}
+.lang-switch{display:flex;justify-content:flex-end;gap:5px;margin-bottom:10px}
+.lang-btn{padding:5px 10px;font-size:0.7rem;cursor:pointer;border:1px solid #ddd;border-radius:5px;background:#fff}
+.lang-btn.active{background:var(--main);color:white;border-color:var(--main)}
+h1{text-align:center;color:var(--main);margin:10px 0;font-size:1.3rem}
+input{width:100%;padding:15px;margin:10px 0;border:2px solid #ddd;border-radius:10px;box-sizing:border-box;font-size:1.1rem;outline:none;text-align:center}
+.result-box{background:#f8f9fa;border:2px dashed var(--main);padding:20px;margin:15px 0;font-weight:bold;color:#333;font-size:1.4rem;border-radius:12px;text-align:center;min-height:1.5em;line-height:1.4;word-wrap:break-word}
+.button-group,.tense-grid{display:grid;gap:8px;margin-bottom:10px}
+.button-group{grid-template-columns:repeat(3,1fr)}
+.tense-grid{grid-template-columns:repeat(3,1fr)}
+button{padding:10px 2px;border:none;border-radius:8px;background-color:#e4e6eb;cursor:pointer;font-weight:bold;font-size:0.75rem;transition:0.2s}
+button.active{background-color:var(--main);color:white}
+.label{font-size:0.75rem;color:#606770;margin-top:10px;margin-bottom:5px;font-weight:bold}
+.c-aux { color: var(--aux); } 
+.c-be { color: var(--part); }  
+.c-v { color: var(--accent); } 
+</style>
+</head>
+<body>
+<div class="container">
+    <div class="lang-switch">
+        <button id="btn-ja" class="lang-btn active" onclick="setLang('ja')">JP</button>
+        <button id="btn-en" class="lang-btn" onclick="setLang('en')">EN</button>
+    </div>
+    <h1 id="title">English Tense Puzzle</h1>
+    <div class="label" id="lbl-input">1. 例文を入力</div>
+    <input type="text" id="userInput" value="He eats lunch" oninput="convert()" onfocus="this.select()">
+    <div class="label" id="lbl-result">2. パズルの組み立て結果</div>
+    <div class="result-box" id="resultText"></div>
+    <div class="label" id="lbl-type">3. 文のタイプ</div>
+    <div class="button-group">
+        <button id="mode-pos" onclick="setMode('pos',this)" class="active">肯定</button>
+        <button id="mode-neg" onclick="setMode('neg',this)">否定</button>
+        <button id="mode-int" onclick="setMode('int',this)">疑問</button>
+    </div>
+    <div class="label" id="lbl-tense">4. 時制を選択</div>
+    <div class="tense-grid" id="tenseBtns"></div>
+</div>
+
+<script>
+let currentMode='pos', tTime='present', tAspect='simple', currentLang='ja';
+
+const i18n = {
+    ja: { title: "English Tense Puzzle", input: "1. 例文を入力 (be動詞もOK!)", result: "2. パズルの結果", type: "3. 文のタイプ", tense: "4. 時制を選択", pos: "肯定", neg: "否定", int: "疑問", present: "現在", past: "過去", future: "未来", simple: "形", cont: "進行", perf: "完了", p_cont: "完進" },
+    en: { title: "English Tense Puzzle", input: "1. Enter a sentence", result: "2. Puzzle Result", type: "3. Sentence Type", tense: "4. Select Tense", pos: "Affirmative", neg: "Negative", int: "Interrogative", present: "Pres.", past: "Past", future: "Fut.", simple: "Simp.", cont: "Cont.", perf: "Perf.", p_cont: "P-Cont" }
+};
+
+const irregulars = {
+    'become':{past:'became',pp:'become'},'begin':{past:'began',pp:'begun'},'break':{past:'broke',pp:'broken'},
+    'bring':{past:'brought',pp:'brought'},'build':{past:'built',pp:'built'},'buy':{past:'bought',pp:'bought'},
+    'catch':{past:'caught',pp:'caught'},'choose':{past:'chose',pp:'chosen'},'come':{past:'came',pp:'come'},
+    'cut':{past:'cut',pp:'cut'},'do':{past:'did',pp:'done'},'draw':{past:'drew',pp:'drawn'},
+    'drive':{past:'drove',pp:'driven'},'eat':{past:'ate',pp:'eaten'},'fall':{past:'fell',pp:'fallen'},
+    'feel':{past:'felt',pp:'felt'},'find':{past:'found',pp:'found'},'fly':{past:'flew',pp:'flown'},
+    'forget':{past:'forgot',pp:'forgotten'},'get':{past:'got',pp:'gotten'},'give':{past:'gave',pp:'given'},
+    'go':{past:'went',pp:'gone'},'grow':{past:'grew',pp:'grown'},'have':{past:'had',pp:'had'},
+    'hear':{past:'heard',pp:'heard'},'hit':{past:'hit',pp:'hit'},'keep':{past:'kept',pp:'kept'},
+    'know':{past:'knew',pp:'known'},'leave':{past:'left',pp:'left'},'lend':{past:'lent',pp:'lent'},
+    'let':{past:'let',pp:'let'},'lose':{past:'lost',pp:'lost'},'make':{past:'made',pp:'made'},
+    'meet':{past:'met',pp:'met'},'put':{past:'put',pp:'put'},'read':{past:'read',pp:'read'},
+    'ride':{past:'rode',pp:'ridden'},'run':{past:'ran',pp:'run'},'say':{past:'said',pp:'said'},
+    'see':{past:'saw',pp:'seen'},'sell':{past:'sold',pp:'sold'},'send':{past:'sent',pp:'sent'},
+    'shine':{past:'shone',pp:'shone'},'show':{past:'showed',pp:'shown'},'sing':{past:'sang',pp:'sung'},
+    'sink':{past:'sank',pp:'sunk'},'sit':{past:'sat',pp:'sat'},'sleep':{past:'slept',pp:'slept'},
+    'speak':{past:'spoke',pp:'spoken'},'spend':{past:'spent',pp:'spent'},'stand':{past:'stood',pp:'stood'},
+    'swim':{past:'swam',pp:'swum'},'take':{past:'took',pp:'taken'},'teach':{past:'taught',pp:'taught'},
+    'tell':{past:'told',pp:'told'},'think':{past:'thought',pp:'thought'},'throw':{past:'threw',pp:'thrown'},
+    'understand':{past:'understood',pp:'understood'},'wake':{past:'woke',pp:'woken'},'win':{past:'won',pp:'won'},
+    'write':{past:'wrote',pp:'written'}
+};
+
+function setLang(lang){
+    currentLang = lang;
+    document.getElementById('btn-ja').classList.toggle('active', lang==='ja');
+    document.getElementById('btn-en').classList.toggle('active', lang==='en');
+    updateLabels();
+    renderTenseButtons();
+    convert();
+}
+
+function updateLabels(){
+    const t = i18n[currentLang];
+    document.getElementById('lbl-input').innerText = t.input;
+    document.getElementById('lbl-result').innerText = t.result;
+    document.getElementById('lbl-type').innerText = t.type;
+    document.getElementById('lbl-tense').innerText = t.tense;
+    document.getElementById('mode-pos').innerText = t.pos;
+    document.getElementById('mode-neg').innerText = t.neg;
+    document.getElementById('mode-int').innerText = t.int;
+}
+
+function renderTenseButtons(){
+    const container = document.getElementById('tenseBtns');
+    container.innerHTML = '';
+    const t = i18n[currentLang];
+    const aspects = ['simple', 'cont', 'perf', 'p_cont'];
+    const times = ['present', 'past', 'future'];
+    
+    // 縦軸に「状態」、横軸に「時間」が来るように修正
+    aspects.forEach(aspect => {
+        times.forEach(time => {
+            const btn = document.createElement('button');
+            btn.innerText = `${t[time]}${t[aspect]}`;
+            if(time === tTime && aspect === tAspect) btn.className = 'active';
+            btn.onclick = (e) => updateTense(time, aspect, e.target);
+            container.appendChild(btn);
+        });
+    });
+}
+
+const span=(txt,cls)=>`<span class="${cls}">${txt}</span>`;
+
+function getBaseVerb(v) {
+    v = v.toLowerCase();
+    if (/^(am|is|are|was|were|be)$/.test(v)) return 'be';
+    for (let base in irregulars) {
+        if (irregulars[base].past === v || irregulars[base].pp === v) return base;
+    }
+    if (v.endsWith('ies')) return v.slice(0, -3) + 'y';
+    if (v.endsWith('es')) {
+        if (/sses$|shes$|ches$|xes$/.test(v)) return v.slice(0, -2);
+        if (v === 'goes') return 'go';
+        if (v === 'does') return 'do';
+    }
+    if (v.endsWith('s') && !v.endsWith('ss')) return v.slice(0, -1);
+    if (v.endsWith('ed')) {
+        if (v.endsWith('ied')) return v.slice(0, -3) + 'y';
+        if (v.length > 3 && v[v.length-3] === v[v.length-4]) return v.slice(0, -3);
+        return v.slice(0, -2);
+    }
+    return v;
+}
+
+function convert(){
+    const rawInput=document.getElementById('userInput').value.trim();
+    if(!rawInput) { document.getElementById('resultText').innerHTML = ""; return; }
+    const words = rawInput.replace(/\.|\?|!$/g,"").split(/\s+/);
+    let rawS = words[0];
+    let s = (rawS.toLowerCase() === 'i') ? 'I' : rawS.toLowerCase();
+    let v_in = words[1] ? words[1].toLowerCase() : "";
+    const r = words.slice(2).join(" ");
+    if(!v_in && words.length < 2) { 
+        document.getElementById('resultText').innerHTML = rawS.charAt(0).toUpperCase() + rawS.slice(1) + "."; 
+        return; 
+    }
+    let v = getBaseVerb(v_in);
+    const isBe = (v === 'be');
+    const is3rd=/he|she|it/i.test(s)||(s.toLowerCase()!=='i'&&s.toLowerCase()!=='you'&&!s.includes('and')&&!s.endsWith('s'));
+    const bP=(s.toLowerCase()==='i')?'am':(is3rd?'is':'are');
+    const bPa=(s.toLowerCase()==='i'||is3rd)?'was':'were';
+    const p_will = span('will', 'c-aux'), p_not = span('not', 'c-aux');
+    const p_have = (is3rd && tTime==='present') ? span('has','c-aux') : (tTime==='past' ? span('had','c-aux') : span('have','c-aux'));
+    const v_ing = isBe ? span('being','c-v') : (v.endsWith('e')?v.slice(0,-1)+span('ing','c-v'):v+span('ing','c-v'));
+    const v_pp = isBe ? span('been','c-be') : (irregulars[v]?span(irregulars[v].pp,'c-v'):(v.endsWith('e')?v+span('d','c-v'):v+span('ed','c-v')));
+    const v_pst = isBe ? span(bPa,'c-be') : (irregulars[v]?span(irregulars[v].past,'c-v'):(v.endsWith('e')?v+span('d','c-v'):v+span('ed','c-v')));
+    let v_pre = v;
+    if(!isBe && is3rd) {
+        if (v==='go'||v==='do') v_pre = v+span('es','c-v');
+        else if(v==='have') v_pre = 'ha'+span('s','c-v');
+        else if(v.endsWith('y') && !/[aeiou]y$/.test(v)) v_pre = v.slice(0,-1)+span('ies','c-v');
+        else if(/s$|sh$|ch$|x$/.test(v)) v_pre = v+span('es','c-v');
+        else v_pre = v+span('s','c-v');
+    }
+    const capS = s.charAt(0).toUpperCase() + s.slice(1);
+    let res="";
+    if(currentMode==='pos'){
+        if(tTime==='present'){
+            if(tAspect==='simple') res = isBe ? `${capS} ${span(bP,'c-be')} ${r}`:`${capS} ${v_pre} ${r}`;
+            else if(tAspect==='cont') res=`${capS} ${span(bP,'c-be')} ${v_ing} ${r}`;
+            else if(tAspect==='perf') res=`${capS} ${p_have} ${v_pp} ${r}`;
+            else res=`${capS} ${p_have} ${span('been','c-be')} ${v_ing} ${r}`;
+        } else if(tTime==='past'){
+            if(tAspect==='simple') res=`${capS} ${v_pst} ${r}`;
+            else if(tAspect==='cont') res=`${capS} ${span(bPa,'c-be')} ${v_ing} ${r}`;
+            else if(tAspect==='perf') res=`${capS} ${span('had','c-aux')} ${v_pp} ${r}`;
+            else res=`${capS} ${span('had','c-aux')} ${span('been','c-be')} ${v_ing} ${r}`;
+        } else {
+            if(tAspect==='simple') res=`${capS} ${p_will} ${isBe?span('be','c-be'):v} ${r}`;
+            else if(tAspect==='cont') res=`${capS} ${p_will} ${span('be','c-be')} ${v_ing} ${r}`;
+            else if(tAspect==='perf') res=`${capS} ${p_will} ${span('have','c-aux')} ${v_pp} ${r}`;
+            else res=`${capS} ${p_will} ${span('have','c-aux')} ${span('been','c-be')} ${v_ing} ${r}`;
+        }
+    } else if(currentMode==='neg'){
+        if(tAspect==='simple'){
+            if(tTime==='future') res=`${capS} ${p_will} ${p_not} ${isBe?span('be','c-be'):v} ${r}`;
+            else if(isBe) res=`${capS} ${span(tTime==='past'?bPa:bP,'c-be')} ${p_not} ${r}`;
+            else res=`${capS} ${span(tTime==='past'?'did':(is3rd?'does':'do'),'c-aux')} ${p_not} ${v} ${r}`;
+        } else {
+            const hv = (tTime==='future')?p_will:(tTime==='past'?span('had','c-aux'):p_have);
+            const be = (tTime==='past'?span(bPa,'c-be'):span(bP,'c-be'));
+            if(tAspect==='cont') res=`${capS} ${tTime==='future'?p_will:be} ${p_not} ${tTime==='future'?span('be','c-be'):""} ${v_ing} ${r}`;
+            else if(tAspect==='perf') res=`${capS} ${hv} ${p_not} ${tTime==='future'?span('have','c-aux'):""} ${v_pp} ${r}`;
+            else res=`${capS} ${hv} ${p_not} ${tTime==='future'?span('have been','c-be'):span('been','c-be')} ${v_ing} ${r}`;
+        }
+    } else {
+        if(tAspect==='simple'){
+            if(tTime==='future') res=`${span('Will','c-aux')} ${s} ${isBe?span('be','c-be'):v} ${r}?`;
+            else if(isBe) res=`${span((tTime==='past'?bPa:bP).toUpperCase(),'c-be')} ${s} ${r}?`;
+            else res=`${span(tTime==='past'?'Did':(is3rd?'Does':'Do'),'c-aux')} ${s} ${v} ${r}?`;
+        } else {
+            let front = (tTime==='future')?'Will':(tAspect.includes('perf')?(tTime==='past'?'Had':(is3rd?'Has':'Have')):(tTime==='past'?bPa:bP));
+            let frontSpan = span(front.charAt(0).toUpperCase()+front.slice(1), (tAspect==='cont'&&!tAspect.includes('perf'))?'c-be':'c-aux');
+            if(tAspect==='cont' && !tAspect.includes('perf')){
+                res = (tTime==='future') ? `${span('Will','c-aux')} ${s} ${span('be','c-be')} ${v_ing} ${r}?` : `${frontSpan} ${s} ${v_ing} ${r}?`;
+            } else if(tAspect==='perf'){
+                res = (tTime==='future') ? `${span('Will','c-aux')} ${s} ${span('have','c-aux')} ${v_pp} ${r}?` : `${frontSpan} ${s} ${v_pp} ${r}?`;
+            } else {
+                res = (tTime==='future') ? `${span('Will','c-aux')} ${s} ${span('have been','c-be')} ${v_ing} ${r}?` : `${frontSpan} ${s} ${span('been','c-be')} ${v_ing} ${r}?`;
+            }
+        }
+    }
+    document.getElementById('resultText').innerHTML = res.trim().replace(/\s+/g, " ") + (currentMode==='int'||res.includes('?')?"":".");
+}
+function setMode(m,b){currentMode=m;setActive(b,'.button-group');convert()}
+function updateTense(t,a,b){tTime=t;tAspect=a;renderTenseButtons();convert()}
+function setActive(b,s){document.querySelectorAll(s+' button').forEach(x=>x.classList.remove('active'));b.classList.add('active')}
+window.onload=()=>{setLang('ja');};
+</script>
+</body>
+</html>
