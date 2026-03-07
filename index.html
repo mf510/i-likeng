@@ -33,7 +33,7 @@ button.active{background-color:var(--main);color:white}
     </div>
     <h1 id="title">English Tense Puzzle</h1>
     <div class="label" id="lbl-input">1. 例文を入力</div>
-    <input type="text" id="userInput" value="He is a student" oninput="convert()" onfocus="this.select()">
+    <input type="text" id="userInput" value="Mrs. Green plays tennis" oninput="convert()" onfocus="this.select()">
     <div class="label" id="lbl-result">2. パズルの組み立て結果</div>
     <div class="result-box" id="resultText"></div>
     <div class="label" id="lbl-type">3. 文のタイプ</div>
@@ -50,31 +50,35 @@ button.active{background-color:var(--main);color:white}
 let currentMode='pos', tTime='present', tAspect='simple', currentLang='ja';
 
 const i18n = {
-    ja: { title: "English Tense Puzzle", input: "1. 例文を入力 (be動詞もOK!)", result: "2. パズルの結果", type: "3. 文のタイプ", tense: "4. 時制を選択", pos: "肯定", neg: "否定", int: "疑問", present: "現在", past: "過去", future: "未来", simple: "形", cont: "進行", perf: "完了", p_cont: "完進" },
+    ja: { title: "English Tense Puzzle", input: "1. 例文を入力 (be動詞や敬称もOK!)", result: "2. パズルの結果", type: "3. 文のタイプ", tense: "4. 時制を選択", pos: "肯定", neg: "否定", int: "疑問", present: "現在", past: "過去", future: "未来", simple: "形", cont: "進行", perf: "完了", p_cont: "完進" },
     en: { title: "English Tense Puzzle", input: "1. Enter a sentence", result: "2. Puzzle Result", type: "3. Sentence Type", tense: "4. Select Tense", pos: "Affirmative", neg: "Negative", int: "Interrogative", present: "Pres.", past: "Past", future: "Fut.", simple: "Simp.", cont: "Cont.", perf: "Perf.", p_cont: "P-Cont" }
 };
 
 const irregulars = {
-    'become':{past:'became',pp:'become'},'begin':{past:'began',pp:'begun'},'break':{past:'broke',pp:'broken'},
-    'bring':{past:'brought',pp:'brought'},'build':{past:'built',pp:'built'},'buy':{past:'bought',pp:'bought'},
-    'catch':{past:'caught',pp:'caught'},'choose':{past:'chose',pp:'chosen'},'come':{past:'came',pp:'come'},
-    'cut':{past:'cut',pp:'cut'},'do':{past:'did',pp:'done'},'draw':{past:'drew',pp:'drawn'},
+    'become':{past:'became',pp:'become'},'begin':{past:'began',pp:'begun'},'bend':{past:'bent',pp:'bent'},
+    'break':{past:'broke',pp:'broken'},'bring':{past:'brought',pp:'brought'},'build':{past:'built',pp:'built'},
+    'buy':{past:'bought',pp:'bought'},'catch':{past:'caught',pp:'caught'},'choose':{past:'chose',pp:'chosen'},
+    'come':{past:'came',pp:'come'},'cost':{past:'cost',pp:'cost'},'cut':{past:'cut',pp:'cut'},
+    'do':{past:'did',pp:'done'},'draw':{past:'drew',pp:'drawn'},'drink':{past:'drank',pp:'drunk'},
     'drive':{past:'drove',pp:'driven'},'eat':{past:'ate',pp:'eaten'},'fall':{past:'fell',pp:'fallen'},
     'feel':{past:'felt',pp:'felt'},'find':{past:'found',pp:'found'},'fly':{past:'flew',pp:'flown'},
     'forget':{past:'forgot',pp:'forgotten'},'get':{past:'got',pp:'gotten'},'give':{past:'gave',pp:'given'},
     'go':{past:'went',pp:'gone'},'grow':{past:'grew',pp:'grown'},'have':{past:'had',pp:'had'},
-    'hear':{past:'heard',pp:'heard'},'hit':{past:'hit',pp:'hit'},'keep':{past:'kept',pp:'kept'},
-    'know':{past:'knew',pp:'known'},'leave':{past:'left',pp:'left'},'lend':{past:'lent',pp:'lent'},
+    'hear':{past:'heard',pp:'heard'},'hide':{past:'hid',pp:'hidden'},'hit':{past:'hit',pp:'hit'},
+    'hold':{past:'held',pp:'held'},'keep':{past:'kept',pp:'kept'},'know':{past:'knew',pp:'known'},
+    'lead':{past:'led',pp:'led'},'leave':{past:'left',pp:'left'},'lend':{past:'lent',pp:'lent'},
     'let':{past:'let',pp:'let'},'lose':{past:'lost',pp:'lost'},'make':{past:'made',pp:'made'},
-    'meet':{past:'met',pp:'met'},'put':{past:'put',pp:'put'},'read':{past:'read',pp:'read'},
-    'ride':{past:'rode',pp:'ridden'},'run':{past:'ran',pp:'run'},'say':{past:'said',pp:'said'},
-    'see':{past:'saw',pp:'seen'},'sell':{past:'sold',pp:'sold'},'send':{past:'sent',pp:'sent'},
+    'mean':{past:'meant',pp:'meant'},'meet':{past:'met',pp:'met'},'pay':{past:'paid',pp:'paid'},
+    'put':{past:'put',pp:'put'},'read':{past:'read',pp:'read'},'ride':{past:'rode',pp:'ridden'},
+    'run':{past:'ran',pp:'run'},'say':{past:'said',pp:'said'},'see':{past:'saw',pp:'seen'},
+    'sell':{past:'sold',pp:'sold'},'send':{past:'sent',pp:'sent'},'shake':{past:'shook',pp:'shaken'},
     'shine':{past:'shone',pp:'shone'},'show':{past:'showed',pp:'shown'},'sing':{past:'sang',pp:'sung'},
     'sink':{past:'sank',pp:'sunk'},'sit':{past:'sat',pp:'sat'},'sleep':{past:'slept',pp:'slept'},
     'speak':{past:'spoke',pp:'spoken'},'spend':{past:'spent',pp:'spent'},'stand':{past:'stood',pp:'stood'},
-    'swim':{past:'swam',pp:'swum'},'take':{past:'took',pp:'taken'},'teach':{past:'taught',pp:'taught'},
-    'tell':{past:'told',pp:'told'},'think':{past:'thought',pp:'thought'},'throw':{past:'threw',pp:'thrown'},
-    'understand':{past:'understood',pp:'understood'},'wake':{past:'woke',pp:'woken'},'win':{past:'won',pp:'won'},
+    'steal':{past:'stole',pp:'stolen'},'swim':{past:'swam',pp:'swum'},'take':{past:'took',pp:'taken'},
+    'teach':{past:'taught',pp:'taught'},'tell':{past:'told',pp:'told'},'think':{past:'thought',pp:'thought'},
+    'throw':{past:'threw',pp:'thrown'},'understand':{past:'understood',pp:'understood'},
+    'wake':{past:'woke',pp:'woken'},'wear':{past:'wore',pp:'worn'},'win':{past:'won',pp:'won'},
     'write':{past:'wrote',pp:'written'}
 };
 
@@ -118,8 +122,20 @@ function renderTenseButtons(){
 const span=(txt,cls)=>`<span class="${cls}">${txt}</span>`;
 const cap=(s)=>s.charAt(0).toUpperCase()+s.slice(1);
 
+function isVerb(w) {
+    if(!w) return false;
+    let v = w.toLowerCase().replace(/[^a-z]/g, "");
+    if (/^(am|is|are|was|were|be|do|does|did|has|have|had|will)$/.test(v)) return true;
+    if (irregulars[v]) return true;
+    for (let base in irregulars) {
+        if (irregulars[base].past === v || irregulars[base].pp === v) return true;
+    }
+    if (v.endsWith('ing') || v.endsWith('ed') || v.endsWith('s')) return true;
+    return false;
+}
+
 function getBaseVerb(v) {
-    v = v.toLowerCase();
+    v = v.toLowerCase().replace(/[^a-z]/g, "");
     if (/^(am|is|are|was|were|be)$/.test(v)) return 'be';
     for (let base in irregulars) {
         if (irregulars[base].past === v || irregulars[base].pp === v) return base;
@@ -142,20 +158,37 @@ function getBaseVerb(v) {
 function convert(){
     const rawInput=document.getElementById('userInput').value.trim();
     if(!rawInput) { document.getElementById('resultText').innerHTML = ""; return; }
-    const words = rawInput.replace(/\.|\?|!$/g,"").split(/\s+/);
-    let rawS = words[0];
-    let s = (rawS.toLowerCase() === 'i') ? 'I' : rawS.toLowerCase();
-    let v_in = words[1] ? words[1].toLowerCase() : "";
-    const r = words.slice(2).join(" ");
-    if(!v_in && words.length < 2) { 
-        document.getElementById('resultText').innerHTML = cap(rawS) + "."; 
-        return; 
+    
+    const words = rawInput.replace(/\. |\?|!$/g," ").split(/\s+/);
+    let subjectArr = [];
+    let verbIdx = -1;
+    const honorifics = /^(mr\.|mrs\.|ms\.|miss|dr\.|prof\.|rev\.|capt\.|sir|madam)$/i;
+
+    for(let i=0; i<words.length; i++) {
+        if(honorifics.test(words[i]) && i+1 < words.length) {
+            subjectArr.push(words[i]);
+            subjectArr.push(words[i+1]);
+            i++; continue;
+        }
+        if(isVerb(words[i])) { verbIdx = i; break; }
+        subjectArr.push(words[i]);
     }
+    
+    if(verbIdx === -1) { document.getElementById('resultText').innerHTML = rawInput + "."; return; }
+
+    let rawS = subjectArr.join(" ");
+    let s = (rawS.toLowerCase() === 'i') ? 'I' : rawS;
+    let v_in = words[verbIdx];
+    const r = words.slice(verbIdx + 1).join(" ");
     let v = getBaseVerb(v_in);
     const isBe = (v === 'be');
-    const is3rd=/he|she|it/i.test(s)||(s.toLowerCase()!=='i'&&s.toLowerCase()!=='you'&&!s.includes('and')&&!s.endsWith('s'));
-    const bP=(s.toLowerCase()==='i')?'am':(is3rd?'is':'are');
-    const bPa=(s.toLowerCase()==='i'||is3rd)?'was':'were';
+    
+    let s_low = rawS.toLowerCase();
+    const isHonorific = honorifics.test(subjectArr[0]);
+    const is3rd = isHonorific || /he|she|it/i.test(s_low) || (s_low!=='i' && s_low!=='you' && !s_low.includes('and') && !s_low.endsWith('s'));
+    
+    const bP=(s_low==='i')?'am':(is3rd?'is':'are');
+    const bPa=(s_low==='i'||is3rd)?'was':'were';
     const p_will = span('will', 'c-aux'), p_not = span('not', 'c-aux');
     const p_have = (is3rd && tTime==='present') ? span('has','c-aux') : (tTime==='past' ? span('had','c-aux') : span('have','c-aux'));
     const v_ing = isBe ? span('being','c-v') : (v.endsWith('e')?v.slice(0,-1)+span('ing','c-v'):v+span('ing','c-v'));
@@ -171,57 +204,46 @@ function convert(){
         else v_pre = v+span('s','c-v');
     }
     
-    const capS = (s==='I')?'I':cap(s);
     let res="";
-
     if(currentMode==='pos'){
         if(tTime==='present'){
-            if(tAspect==='simple') res = isBe ? `${capS} ${span(bP,'c-be')} ${r}`:`${capS} ${v_pre} ${r}`;
-            else if(tAspect==='cont') res=`${capS} ${span(bP,'c-be')} ${v_ing} ${r}`;
-            else if(tAspect==='perf') res=`${capS} ${p_have} ${v_pp} ${r}`;
-            else res=`${capS} ${p_have} ${span('been','c-be')} ${v_ing} ${r}`;
+            if(tAspect==='simple') res = isBe ? `${s} ${span(bP,'c-be')} ${r}`:`${s} ${v_pre} ${r}`;
+            else if(tAspect==='cont') res=`${s} ${span(bP,'c-be')} ${v_ing} ${r}`;
+            else if(tAspect==='perf') res=`${s} ${p_have} ${v_pp} ${r}`;
+            else res=`${s} ${p_have} ${span('been','c-be')} ${v_ing} ${r}`;
         } else if(tTime==='past'){
-            if(tAspect==='simple') res=`${capS} ${v_pst} ${r}`;
-            else if(tAspect==='cont') res=`${capS} ${span(bPa,'c-be')} ${v_ing} ${r}`;
-            else if(tAspect==='perf') res=`${capS} ${span('had','c-aux')} ${v_pp} ${r}`;
-            else res=`${capS} ${span('had','c-aux')} ${span('been','c-be')} ${v_ing} ${r}`;
+            if(tAspect==='simple') res=`${s} ${v_pst} ${r}`;
+            else if(tAspect==='cont') res=`${s} ${span(bPa,'c-be')} ${v_ing} ${r}`;
+            else if(tAspect==='perf') res=`${s} ${span('had','c-aux')} ${v_pp} ${r}`;
+            else res=`${s} ${span('had','c-aux')} ${span('been','c-be')} ${v_ing} ${r}`;
         } else {
-            if(tAspect==='simple') res=`${capS} ${p_will} ${isBe?span('be','c-be'):v} ${r}`;
-            else if(tAspect==='cont') res=`${capS} ${p_will} ${span('be','c-be')} ${v_ing} ${r}`;
-            else if(tAspect==='perf') res=`${capS} ${p_will} ${span('have','c-aux')} ${v_pp} ${r}`;
-            else res=`${capS} ${p_will} ${span('have','c-aux')} ${span('been','c-be')} ${v_ing} ${r}`;
+            if(tAspect==='simple') res=`${s} ${p_will} ${isBe?span('be','c-be'):v} ${r}`;
+            else if(tAspect==='cont') res=`${s} ${p_will} ${span('be','c-be')} ${v_ing} ${r}`;
+            else if(tAspect==='perf') res=`${s} ${p_will} ${span('have','c-aux')} ${v_pp} ${r}`;
+            else res=`${s} ${p_will} ${span('have','c-aux')} ${span('been','c-be')} ${v_ing} ${r}`;
         }
     } else if(currentMode==='neg'){
         if(tAspect==='simple'){
-            if(tTime==='future') res=`${capS} ${p_will} ${p_not} ${isBe?span('be','c-be'):v} ${r}`;
-            else if(isBe) res=`${capS} ${span(tTime==='past'?bPa:bP,'c-be')} ${p_not} ${r}`;
-            else res=`${capS} ${span(tTime==='past'?'did':(is3rd?'does':'do'),'c-aux')} ${p_not} ${v} ${r}`;
+            if(tTime==='future') res=`${s} ${p_will} ${p_not} ${isBe?span('be','c-be'):v} ${r}`;
+            else if(isBe) res=`${s} ${span(tTime==='past'?bPa:bP,'c-be')} ${p_not} ${r}`;
+            else res=`${s} ${span(tTime==='past'?'did':(is3rd?'does':'do'),'c-aux')} ${p_not} ${v} ${r}`;
         } else {
             const hv = (tTime==='future')?p_will:(tTime==='past'?span('had','c-aux'):p_have);
-            if(tAspect==='cont') res=`${capS} ${tTime==='future'?p_will:span(tTime==='past'?bPa:bP,'c-be')} ${p_not} ${tTime==='future'?span('be','c-be'):""} ${v_ing} ${r}`;
-            else if(tAspect==='perf') res=`${capS} ${hv} ${p_not} ${tTime==='future'?span('have','c-aux'):""} ${v_pp} ${r}`;
-            else res=`${capS} ${hv} ${p_not} ${tTime==='future'?span('have been','c-be'):span('been','c-be')} ${v_ing} ${r}`;
+            if(tAspect==='cont') res=`${s} ${tTime==='future'?p_will:span(tTime==='past'?bPa:bP,'c-be')} ${p_not} ${tTime==='future'?span('be','c-be'):""} ${v_ing} ${r}`;
+            else if(tAspect==='perf') res=`${s} ${hv} ${p_not} ${tTime==='future'?span('have','c-aux'):""} ${v_pp} ${r}`;
+            else res=`${s} ${hv} ${p_not} ${tTime==='future'?span('have been','c-be'):span('been','c-be')} ${v_ing} ${r}`;
         }
     } else {
-        // 疑問文 (Interrogative)
         if (tTime === 'future') {
-            let core = "";
-            if(tAspect==='simple') core = `${isBe?span('be','c-be'):v} ${r}`;
-            else if(tAspect==='cont') core = `${span('be','c-be')} ${v_ing} ${r}`;
-            else if(tAspect==='perf') core = `${span('have','c-aux')} ${v_pp} ${r}`;
-            else core = `${span('have been','c-be')} ${v_ing} ${r}`;
+            let core = (tAspect==='simple')?`${isBe?span('be','c-be'):v} ${r}`:(tAspect==='cont'?`${span('be','c-be')} ${v_ing} ${r}`:(tAspect==='perf'?`${span('have','c-aux')} ${v_pp} ${r}`:`${span('have been','c-be')} ${v_ing} ${r}`));
             res = `${span('Will','c-aux')} ${s} ${core}?`;
         } else if (tAspect === 'perf' || tAspect === 'p_cont') {
-            // 現在完了・過去完了 (進行形含む)
             let hv = (tTime==='past') ? span('Had','c-aux') : span(cap(is3rd?'has':'have'),'c-aux');
             let core = (tAspect === 'perf') ? `${v_pp} ${r}` : `${span('been','c-be')} ${v_ing} ${r}`;
             res = `${hv} ${s} ${core}?`;
         } else if (tAspect === 'cont') {
-            // 進行形 (現在・過去)
-            let beStr = (tTime==='past' ? bPa : bP);
-            res = `${span(cap(beStr),'c-be')} ${s} ${v_ing} ${r}?`;
+            res = `${span(cap(tTime==='past' ? bPa : bP),'c-be')} ${s} ${v_ing} ${r}?`;
         } else {
-            // 基本形 (現在・過去)
             if (isBe) res = `${span(cap(tTime==='past'?bPa:bP),'c-be')} ${s} ${r}?`;
             else res = `${span(cap(tTime==='past'?'did':(is3rd?'does':'do')),'c-aux')} ${s} ${v} ${r}?`;
         }
