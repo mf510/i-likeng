@@ -7,7 +7,7 @@
 <style>
 :root { --main: #007bff; --accent: #ff4757; --part: #2ed573; --aux: #ffa502; }
 body{font-family:'Segoe UI',Meiryo,sans-serif;background-color:#f0f2f5;padding:20px;color:#1c1e21;margin:0}
-.container{max-width:600px;margin:auto;background:white;padding:25px;border-radius:20px;box-shadow:0 10px(25px rgba(0,0,0,0.1))}
+.container{max-width:600px;margin:auto;background:white;padding:25px;border-radius:20px;box-shadow:0 10px 25px rgba(0,0,0,0.1)}
 .lang-switch{display:flex;justify-content:flex-end;gap:5px;margin-bottom:10px}
 .lang-btn{padding:5px 10px;font-size:0.7rem;cursor:pointer;border:1px solid #ddd;border-radius:5px;background:#fff}
 .lang-btn.active{background:var(--main);color:white;border-color:var(--main)}
@@ -208,14 +208,23 @@ function convert(){
             else if(isBe) res=`${span(cap(tTime==='past'?bPa:bP),'c-be')} ${s} ${r}?`;
             else res=`${span(cap(tTime==='past'?'did':(is3rd?'does':'do')),'c-aux')} ${s} ${v} ${r}?`;
         } else {
-            let auxStr = (tTime==='future')?'will':(tAspect.includes('perf')?(tTime==='past'?'had':(is3rd?'has':'have')):(tTime==='past'?bPa:bP));
-            let auxSpan = span(cap(auxStr), (tAspect==='cont'&&!tAspect.includes('perf'))?'c-be':'c-aux');
-            if(tAspect==='cont' && !tAspect.includes('perf')){
-                res = (tTime==='future') ? `${span('Will','c-aux')} ${s} ${span('be','c-be')} ${v_ing} ${r}?` : `${auxSpan} ${s} ${v_ing} ${r}?`;
-            } else if(tAspect==='perf'){
-                res = (tTime==='future') ? `${span('Will','c-aux')} ${s} ${span('have','c-aux')} ${v_pp} ${r}?` : `${auxSpan} ${s} ${v_pp} ${r}?`;
+            // 完了形（完了進行形含む）の場合、常に Has/Have/Had/Will を優先
+            if(tAspect.includes('perf') || tTime === 'future') {
+                let auxStr = (tTime==='future')?'will':(tTime==='past'?'had':(is3rd?'has':'have'));
+                let auxSpan = span(cap(auxStr), 'c-aux');
+                if(tAspect==='cont' && !tAspect.includes('perf')) {
+                    // 未来進行形など
+                    res = (tTime==='future') ? `${span('Will','c-aux')} ${s} ${span('be','c-be')} ${v_ing} ${r}?` : `${span(cap(tTime==='past'?bPa:bP),'c-be')} ${s} ${v_ing} ${r}?`;
+                } else if(tAspect==='perf') {
+                    res = (tTime==='future') ? `${span('Will','c-aux')} ${s} ${span('have','c-aux')} ${v_pp} ${r}?` : `${auxSpan} ${s} ${v_pp} ${r}?`;
+                } else {
+                    // 完了進行形 (例: Has he been being...?)
+                    res = (tTime==='future') ? `${span('Will','c-aux')} ${s} ${span('have been','c-be')} ${v_ing} ${r}?` : `${auxSpan} ${s} ${span('been','c-be')} ${v_ing} ${r}?`;
+                }
             } else {
-                res = (tTime==='future') ? `${span('Will','c-aux')} ${s} ${span('have been','c-be')} ${v_ing} ${r}?` : `${auxSpan} ${s} ${span('been','c-be')} ${v_ing} ${r}?`;
+                // 通常の進行形
+                let beStr = (tTime==='past'?bPa:bP);
+                res = `${span(cap(beStr),'c-be')} ${s} ${v_ing} ${r}?`;
             }
         }
     }
