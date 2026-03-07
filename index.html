@@ -203,29 +203,27 @@ function convert(){
             else res=`${capS} ${hv} ${p_not} ${tTime==='future'?span('have been','c-be'):span('been','c-be')} ${v_ing} ${r}`;
         }
     } else {
-        if(tAspect==='simple'){
-            if(tTime==='future') res=`${span('Will','c-aux')} ${s} ${isBe?span('be','c-be'):v} ${r}?`;
-            else if(isBe) res=`${span(cap(tTime==='past'?bPa:bP),'c-be')} ${s} ${r}?`;
-            else res=`${span(cap(tTime==='past'?'did':(is3rd?'does':'do')),'c-aux')} ${s} ${v} ${r}?`;
+        // 疑問文 (Interrogative)
+        if (tTime === 'future') {
+            let core = "";
+            if(tAspect==='simple') core = `${isBe?span('be','c-be'):v} ${r}`;
+            else if(tAspect==='cont') core = `${span('be','c-be')} ${v_ing} ${r}`;
+            else if(tAspect==='perf') core = `${span('have','c-aux')} ${v_pp} ${r}`;
+            else core = `${span('have been','c-be')} ${v_ing} ${r}`;
+            res = `${span('Will','c-aux')} ${s} ${core}?`;
+        } else if (tAspect === 'perf' || tAspect === 'p_cont') {
+            // 現在完了・過去完了 (進行形含む)
+            let hv = (tTime==='past') ? span('Had','c-aux') : span(cap(is3rd?'has':'have'),'c-aux');
+            let core = (tAspect === 'perf') ? `${v_pp} ${r}` : `${span('been','c-be')} ${v_ing} ${r}`;
+            res = `${hv} ${s} ${core}?`;
+        } else if (tAspect === 'cont') {
+            // 進行形 (現在・過去)
+            let beStr = (tTime==='past' ? bPa : bP);
+            res = `${span(cap(beStr),'c-be')} ${s} ${v_ing} ${r}?`;
         } else {
-            // 完了形（完了進行形含む）の場合、常に Has/Have/Had/Will を優先
-            if(tAspect.includes('perf') || tTime === 'future') {
-                let auxStr = (tTime==='future')?'will':(tTime==='past'?'had':(is3rd?'has':'have'));
-                let auxSpan = span(cap(auxStr), 'c-aux');
-                if(tAspect==='cont' && !tAspect.includes('perf')) {
-                    // 未来進行形など
-                    res = (tTime==='future') ? `${span('Will','c-aux')} ${s} ${span('be','c-be')} ${v_ing} ${r}?` : `${span(cap(tTime==='past'?bPa:bP),'c-be')} ${s} ${v_ing} ${r}?`;
-                } else if(tAspect==='perf') {
-                    res = (tTime==='future') ? `${span('Will','c-aux')} ${s} ${span('have','c-aux')} ${v_pp} ${r}?` : `${auxSpan} ${s} ${v_pp} ${r}?`;
-                } else {
-                    // 完了進行形 (例: Has he been being...?)
-                    res = (tTime==='future') ? `${span('Will','c-aux')} ${s} ${span('have been','c-be')} ${v_ing} ${r}?` : `${auxSpan} ${s} ${span('been','c-be')} ${v_ing} ${r}?`;
-                }
-            } else {
-                // 通常の進行形
-                let beStr = (tTime==='past'?bPa:bP);
-                res = `${span(cap(beStr),'c-be')} ${s} ${v_ing} ${r}?`;
-            }
+            // 基本形 (現在・過去)
+            if (isBe) res = `${span(cap(tTime==='past'?bPa:bP),'c-be')} ${s} ${r}?`;
+            else res = `${span(cap(tTime==='past'?'did':(is3rd?'does':'do')),'c-aux')} ${s} ${v} ${r}?`;
         }
     }
     document.getElementById('resultText').innerHTML = res.trim().replace(/\s+/g, " ") + (currentMode==='int'||res.includes('?')?"":".");
