@@ -1,4 +1,4 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="ja">
 <head>
 <meta charset="UTF-8">
@@ -7,7 +7,7 @@
 <style>
 :root { --main: #007bff; --accent: #ff4757; --part: #2ed573; --aux: #ffa502; }
 body{font-family:'Segoe UI',Meiryo,sans-serif;background-color:#f0f2f5;padding:20px;color:#1c1e21;margin:0}
-.container{max-width:600px;margin:auto;background:white;padding:25px;border-radius:20px;box-shadow:0 10px 25px rgba(0,0,0,0.1)}
+.container{max-width:600px;margin:auto;background:white;padding:25px;border-radius:20px;box-shadow:0 10px(25px rgba(0,0,0,0.1))}
 .lang-switch{display:flex;justify-content:flex-end;gap:5px;margin-bottom:10px}
 .lang-btn{padding:5px 10px;font-size:0.7rem;cursor:pointer;border:1px solid #ddd;border-radius:5px;background:#fff}
 .lang-btn.active{background:var(--main);color:white;border-color:var(--main)}
@@ -33,7 +33,7 @@ button.active{background-color:var(--main);color:white}
     </div>
     <h1 id="title">English Tense Puzzle</h1>
     <div class="label" id="lbl-input">1. 例文を入力</div>
-    <input type="text" id="userInput" value="He eats lunch" oninput="convert()" onfocus="this.select()">
+    <input type="text" id="userInput" value="He is a student" oninput="convert()" onfocus="this.select()">
     <div class="label" id="lbl-result">2. パズルの組み立て結果</div>
     <div class="result-box" id="resultText"></div>
     <div class="label" id="lbl-type">3. 文のタイプ</div>
@@ -104,8 +104,6 @@ function renderTenseButtons(){
     const t = i18n[currentLang];
     const aspects = ['simple', 'cont', 'perf', 'p_cont'];
     const times = ['present', 'past', 'future'];
-    
-    // 縦軸に「状態」、横軸に「時間」が来るように修正
     aspects.forEach(aspect => {
         times.forEach(time => {
             const btn = document.createElement('button');
@@ -118,6 +116,7 @@ function renderTenseButtons(){
 }
 
 const span=(txt,cls)=>`<span class="${cls}">${txt}</span>`;
+const cap=(s)=>s.charAt(0).toUpperCase()+s.slice(1);
 
 function getBaseVerb(v) {
     v = v.toLowerCase();
@@ -149,7 +148,7 @@ function convert(){
     let v_in = words[1] ? words[1].toLowerCase() : "";
     const r = words.slice(2).join(" ");
     if(!v_in && words.length < 2) { 
-        document.getElementById('resultText').innerHTML = rawS.charAt(0).toUpperCase() + rawS.slice(1) + "."; 
+        document.getElementById('resultText').innerHTML = cap(rawS) + "."; 
         return; 
     }
     let v = getBaseVerb(v_in);
@@ -162,6 +161,7 @@ function convert(){
     const v_ing = isBe ? span('being','c-v') : (v.endsWith('e')?v.slice(0,-1)+span('ing','c-v'):v+span('ing','c-v'));
     const v_pp = isBe ? span('been','c-be') : (irregulars[v]?span(irregulars[v].pp,'c-v'):(v.endsWith('e')?v+span('d','c-v'):v+span('ed','c-v')));
     const v_pst = isBe ? span(bPa,'c-be') : (irregulars[v]?span(irregulars[v].past,'c-v'):(v.endsWith('e')?v+span('d','c-v'):v+span('ed','c-v')));
+    
     let v_pre = v;
     if(!isBe && is3rd) {
         if (v==='go'||v==='do') v_pre = v+span('es','c-v');
@@ -170,8 +170,10 @@ function convert(){
         else if(/s$|sh$|ch$|x$/.test(v)) v_pre = v+span('es','c-v');
         else v_pre = v+span('s','c-v');
     }
-    const capS = s.charAt(0).toUpperCase() + s.slice(1);
+    
+    const capS = (s==='I')?'I':cap(s);
     let res="";
+
     if(currentMode==='pos'){
         if(tTime==='present'){
             if(tAspect==='simple') res = isBe ? `${capS} ${span(bP,'c-be')} ${r}`:`${capS} ${v_pre} ${r}`;
@@ -196,25 +198,24 @@ function convert(){
             else res=`${capS} ${span(tTime==='past'?'did':(is3rd?'does':'do'),'c-aux')} ${p_not} ${v} ${r}`;
         } else {
             const hv = (tTime==='future')?p_will:(tTime==='past'?span('had','c-aux'):p_have);
-            const be = (tTime==='past'?span(bPa,'c-be'):span(bP,'c-be'));
-            if(tAspect==='cont') res=`${capS} ${tTime==='future'?p_will:be} ${p_not} ${tTime==='future'?span('be','c-be'):""} ${v_ing} ${r}`;
+            if(tAspect==='cont') res=`${capS} ${tTime==='future'?p_will:span(tTime==='past'?bPa:bP,'c-be')} ${p_not} ${tTime==='future'?span('be','c-be'):""} ${v_ing} ${r}`;
             else if(tAspect==='perf') res=`${capS} ${hv} ${p_not} ${tTime==='future'?span('have','c-aux'):""} ${v_pp} ${r}`;
             else res=`${capS} ${hv} ${p_not} ${tTime==='future'?span('have been','c-be'):span('been','c-be')} ${v_ing} ${r}`;
         }
     } else {
         if(tAspect==='simple'){
             if(tTime==='future') res=`${span('Will','c-aux')} ${s} ${isBe?span('be','c-be'):v} ${r}?`;
-            else if(isBe) res=`${span((tTime==='past'?bPa:bP).toUpperCase(),'c-be')} ${s} ${r}?`;
-            else res=`${span(tTime==='past'?'Did':(is3rd?'Does':'Do'),'c-aux')} ${s} ${v} ${r}?`;
+            else if(isBe) res=`${span(cap(tTime==='past'?bPa:bP),'c-be')} ${s} ${r}?`;
+            else res=`${span(cap(tTime==='past'?'did':(is3rd?'does':'do')),'c-aux')} ${s} ${v} ${r}?`;
         } else {
-            let front = (tTime==='future')?'Will':(tAspect.includes('perf')?(tTime==='past'?'Had':(is3rd?'Has':'Have')):(tTime==='past'?bPa:bP));
-            let frontSpan = span(front.charAt(0).toUpperCase()+front.slice(1), (tAspect==='cont'&&!tAspect.includes('perf'))?'c-be':'c-aux');
+            let auxStr = (tTime==='future')?'will':(tAspect.includes('perf')?(tTime==='past'?'had':(is3rd?'has':'have')):(tTime==='past'?bPa:bP));
+            let auxSpan = span(cap(auxStr), (tAspect==='cont'&&!tAspect.includes('perf'))?'c-be':'c-aux');
             if(tAspect==='cont' && !tAspect.includes('perf')){
-                res = (tTime==='future') ? `${span('Will','c-aux')} ${s} ${span('be','c-be')} ${v_ing} ${r}?` : `${frontSpan} ${s} ${v_ing} ${r}?`;
+                res = (tTime==='future') ? `${span('Will','c-aux')} ${s} ${span('be','c-be')} ${v_ing} ${r}?` : `${auxSpan} ${s} ${v_ing} ${r}?`;
             } else if(tAspect==='perf'){
-                res = (tTime==='future') ? `${span('Will','c-aux')} ${s} ${span('have','c-aux')} ${v_pp} ${r}?` : `${frontSpan} ${s} ${v_pp} ${r}?`;
+                res = (tTime==='future') ? `${span('Will','c-aux')} ${s} ${span('have','c-aux')} ${v_pp} ${r}?` : `${auxSpan} ${s} ${v_pp} ${r}?`;
             } else {
-                res = (tTime==='future') ? `${span('Will','c-aux')} ${s} ${span('have been','c-be')} ${v_ing} ${r}?` : `${frontSpan} ${s} ${span('been','c-be')} ${v_ing} ${r}?`;
+                res = (tTime==='future') ? `${span('Will','c-aux')} ${s} ${span('have been','c-be')} ${v_ing} ${r}?` : `${auxSpan} ${s} ${span('been','c-be')} ${v_ing} ${r}?`;
             }
         }
     }
