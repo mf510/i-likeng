@@ -86,9 +86,7 @@ function setLang(lang){
     currentLang = lang;
     document.getElementById('btn-ja').classList.toggle('active', lang==='ja');
     document.getElementById('btn-en').classList.toggle('active', lang==='en');
-    updateLabels();
-    renderTenseButtons();
-    convert();
+    updateLabels(); renderTenseButtons(); convert();
 }
 
 function updateLabels(){
@@ -159,17 +157,28 @@ function convert(){
     const rawInput=document.getElementById('userInput').value.trim();
     if(!rawInput) { document.getElementById('resultText').innerHTML = ""; return; }
     
-    const words = rawInput.replace(/\. |\?|!$/g," ").split(/\s+/);
+    const words = rawInput.replace(/\?|!$/g,"").split(/\s+/);
     let subjectArr = [];
     let verbIdx = -1;
     const honorifics = /^(mr\.|mrs\.|ms\.|miss|dr\.|prof\.|rev\.|capt\.|sir|madam)$/i;
 
     for(let i=0; i<words.length; i++) {
+        // 敬称を発見した場合、その次(苗字)は強制的に主語として扱う
         if(honorifics.test(words[i]) && i+1 < words.length) {
             subjectArr.push(words[i]);
             subjectArr.push(words[i+1]);
-            i++; continue;
+            i++; 
+            // 苗字の直後を動詞として探し始める
+            for(let j=i+1; j<words.length; j++){
+                if(isVerb(words[j])){
+                    verbIdx = j;
+                    break;
+                }
+                subjectArr.push(words[j]);
+            }
+            break; 
         }
+        // 敬称がない場合の通常の動詞探し
         if(isVerb(words[i])) { verbIdx = i; break; }
         subjectArr.push(words[i]);
     }
