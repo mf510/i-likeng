@@ -42,9 +42,26 @@ input[type="text"]:focus{border-color: var(--main); outline: none;}
 .add-btn{background:var(--part);color:white;border:none;padding:0;width:28px;height:24px;border-radius:4px;font-size:0.9rem;font-weight:bold;cursor:pointer}
 .dict-list{max-height:80px;overflow-y:auto;font-size:0.65rem;margin-top:5px}
 .dict-item{display:flex;justify-content:space-between;padding:3px;border-bottom:1px solid #f0f0f0}
+
+/* カスタムモーダル（ヘルプ用） */
+.modal-overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 1000; justify-content: center; align-items: center; padding: 20px; box-sizing: border-box; }
+.modal-content { background: white; padding: 20px; border-radius: 15px; max-width: 400px; width: 100%; position: relative; box-shadow: 0 10px 25px rgba(0,0,0,0.2); animation: pop 0.3s ease; }
+@keyframes pop { from { transform: scale(0.8); opacity: 0; } to { transform: scale(1); opacity: 1; } }
+.modal-header { font-weight: bold; color: var(--main); margin-bottom: 10px; border-bottom: 2px solid var(--bg); padding-bottom: 5px; }
+.modal-body { font-size: 0.85rem; line-height: 1.6; white-space: pre-wrap; color: #444; }
+.modal-close { margin-top: 15px; width: 100%; padding: 10px; background: var(--main); color: white; border: none; border-radius: 8px; cursor: pointer; font-weight: bold; }
 </style>
 </head>
 <body>
+
+<div id="helpModal" class="modal-overlay" onclick="closeHelp()">
+    <div class="modal-content" onclick="event.stopPropagation()">
+        <div class="modal-header" id="modalTitle">Help</div>
+        <div class="modal-body" id="modalBody"></div>
+        <button class="modal-close" onclick="closeHelp()">OK</button>
+    </div>
+</div>
+
 <div class="container">
     <div class="header-row">
         <h1 id="title">English Tense Puzzle</h1>
@@ -95,11 +112,17 @@ let myDict = JSON.parse(localStorage.getItem('myTenseDict')) || {};
 let lastValue = "You play tennis";
 
 const i18n = {
-    ja: { title: "English Tense Puzzle", input: "1. 例文入力", result: "2. パズルの結果", type: "3. 文のタイプ", tense: "4. 時制を選択", dict: "5. 動詞を追加", pos: "肯定", neg: "否定", int: "疑問", present: "現在", past: "過去", future: "未来", simple: "基本形", cont: "進行形", perf: "完了形", p_cont: "完進形", d_base: "原形", d_past: "過去", d_pp: "過去分", d_s: "-s", d_ing: "-ing", help: "【マイ辞書の使い方】\nアプリが対応していない動詞や、特殊な変化をする単語を登録できます。\n例：\ngo, went, gone, goes, going\n登録すると、パズル変換に即座に反映されます。" },
-    en: { title: "English Tense Puzzle", input: "1. Sentence", result: "2. Result", type: "3. Type", tense: "4. Tense", dict: "5. Add Verb", pos: "Aff.", neg: "Neg.", int: "Int.", present: "Pres.", past: "Past", future: "Fut.", simple: "Simple", cont: "Cont.", perf: "Perf.", p_cont: "P-Cont", d_base: "Base", d_past: "Past", d_pp: "P.P.", d_s: "-s", d_ing: "-ing", help: "[How to use My Dictionary]\nYou can register verbs that the app doesn't support or that have unique changes.\nExample:\ngo, went, gone, goes, going\nOnce registered, it will be reflected in the puzzle conversion immediately." }
+    ja: { title: "English Tense Puzzle", input: "1. 例文入力", result: "2. パズルの結果", type: "3. 文のタイプ", tense: "4. 時制を選択", dict: "5. 動詞を追加", pos: "肯定", neg: "否定", int: "疑問", present: "現在", past: "過去", future: "未来", simple: "基本形", cont: "進行形", perf: "完了形", p_cont: "完進形", d_base: "原形", d_past: "過去", d_pp: "過去分", d_s: "-s", d_ing: "-ing", helpT: "マイ辞書の使い方", help: "アプリが対応していない動詞や、特殊な変化をする単語を登録できます。\n\n【登録例】\n原形: go\n過去: went\n過去分: gone\n-s: goes\n-ing: going\n\n登録すると、パズル変換に即座に反映されます。" },
+    en: { title: "English Tense Puzzle", input: "1. Sentence", result: "2. Result", type: "3. Type", tense: "4. Tense", dict: "5. Add Verb", pos: "Aff.", neg: "Neg.", int: "Int.", present: "Pres.", past: "Past", future: "Fut.", simple: "Simple", cont: "Cont.", perf: "Perf.", p_cont: "P-Cont", d_base: "Base", d_past: "Past", d_pp: "P.P.", d_s: "-s", d_ing: "-ing", helpT: "How to use", help: "You can register verbs that the app doesn't support yet.\n\n[Example]\nBase: go\nPast: went\nPP: gone\n-s: goes\n-ing: going\n\nRegistered verbs are applied to the puzzle immediately." }
 };
 
-function showHelp() { alert(i18n[currentLang].help); }
+// モーダル制御
+function showHelp() {
+    document.getElementById('modalTitle').innerText = i18n[currentLang].helpT;
+    document.getElementById('modalBody').innerText = i18n[currentLang].help;
+    document.getElementById('helpModal').style.display = 'flex';
+}
+function closeHelp() { document.getElementById('helpModal').style.display = 'none'; }
 
 function handleFocus(elm) { lastValue = elm.value; elm.value = ""; }
 function handleBlur(elm) { if (elm.value === "") { elm.value = lastValue; convert(); } }
