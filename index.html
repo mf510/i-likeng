@@ -34,9 +34,12 @@ input[type="text"]:focus{border-color: var(--main); outline: none;}
 .c-aux { color: var(--aux); } .c-be { color: var(--part); } .c-v { color: var(--accent); }
 
 .dict-section{margin-top:20px;padding-top:10px;border-top:1px dotted #eee}
-.dict-row{display:flex;gap:3px;margin-bottom:4px}
-.dict-row input{flex:1;padding:6px;font-size:0.7rem;border:1px solid #ccc;border-radius:4px;text-align:center;min-width:0}
-.add-btn{background:var(--part);color:white;padding:5px 10px;border-radius:4px;font-size:0.7rem; font-weight: bold;}
+.dict-row{display:flex;gap:3px;align-items:flex-end;margin-bottom:4px}
+.dict-inputs{display:flex;flex:1;gap:3px}
+.dict-inputs input{flex:1;padding:6px;font-size:0.7rem;border:1px solid #ccc;border-radius:4px;text-align:center;min-width:0}
+.dict-actions{display:flex;flex-direction:column;gap:3px}
+.help-btn{background:var(--aux);color:white;border:none;border-radius:4px;width:28px;height:20px;font-size:0.6rem;font-weight:bold;cursor:pointer}
+.add-btn{background:var(--part);color:white;border:none;padding:0;width:28px;height:24px;border-radius:4px;font-size:0.9rem;font-weight:bold;cursor:pointer}
 .dict-list{max-height:80px;overflow-y:auto;font-size:0.65rem;margin-top:5px}
 .dict-item{display:flex;justify-content:space-between;padding:3px;border-bottom:1px solid #f0f0f0}
 </style>
@@ -68,14 +71,19 @@ input[type="text"]:focus{border-color: var(--main); outline: none;}
     <div class="tense-matrix" id="tenseMatrix"></div>
 
     <div class="dict-section">
-        <div class="label" id="lbl-dict">5. 動詞を追加？</div>
+        <div class="label" id="lbl-dict">5. 動詞を追加</div>
         <div class="dict-row">
-            <input type="text" id="d-base" placeholder="原形">
-            <input type="text" id="d-past" placeholder="過去">
-            <input type="text" id="d-pp" placeholder="過去分">
-            <input type="text" id="d-s" placeholder="-s">
-            <input type="text" id="d-ing" placeholder="-ing">
-            <button class="add-btn" onclick="saveVerb()">＋</button>
+            <div class="dict-inputs">
+                <input type="text" id="d-base" placeholder="原形">
+                <input type="text" id="d-past" placeholder="過去">
+                <input type="text" id="d-pp" placeholder="過去分">
+                <input type="text" id="d-s" placeholder="-s">
+                <input type="text" id="d-ing" placeholder="-ing">
+            </div>
+            <div class="dict-actions">
+                <button class="help-btn" onclick="showHelp()">?</button>
+                <button class="add-btn" onclick="saveVerb()">＋</button>
+            </div>
         </div>
         <div class="dict-list" id="dictList"></div>
     </div>
@@ -87,9 +95,11 @@ let myDict = JSON.parse(localStorage.getItem('myTenseDict')) || {};
 let lastValue = "You play tennis";
 
 const i18n = {
-    ja: { title: "English Tense Puzzle", input: "1. 例文入力", result: "2. パズルの結果", type: "3. 文のタイプ", tense: "4. 時制を選択", dict: "5. 動詞を追加？", pos: "肯定", neg: "否定", int: "疑問", present: "現在", past: "過去", future: "未来", simple: "基本形", cont: "進行形", perf: "完了形", p_cont: "完進形", d_base: "原形", d_past: "過去", d_pp: "過去分", d_s: "-s", d_ing: "-ing" },
-    en: { title: "English Tense Puzzle", input: "1. Sentence", result: "2. Result", type: "3. Type", tense: "4. Tense", dict: "5. Add Verb?", pos: "Aff.", neg: "Neg.", int: "Int.", present: "Pres.", past: "Past", future: "Fut.", simple: "Simple", cont: "Cont.", perf: "Perf.", p_cont: "P-Cont", d_base: "Base", d_past: "Past", d_pp: "P.P.", d_s: "-s", d_ing: "-ing" }
+    ja: { title: "English Tense Puzzle", input: "1. 例文入力", result: "2. パズルの結果", type: "3. 文のタイプ", tense: "4. 時制を選択", dict: "5. 動詞を追加", pos: "肯定", neg: "否定", int: "疑問", present: "現在", past: "過去", future: "未来", simple: "基本形", cont: "進行形", perf: "完了形", p_cont: "完進形", d_base: "原形", d_past: "過去", d_pp: "過去分", d_s: "-s", d_ing: "-ing", help: "【マイ辞書の使い方】\nアプリが対応していない動詞や、特殊な変化をする単語を登録できます。\n例：\ngo, went, gone, goes, going\n登録すると、パズル変換に即座に反映されます。" },
+    en: { title: "English Tense Puzzle", input: "1. Sentence", result: "2. Result", type: "3. Type", tense: "4. Tense", dict: "5. Add Verb", pos: "Aff.", neg: "Neg.", int: "Int.", present: "Pres.", past: "Past", future: "Fut.", simple: "Simple", cont: "Cont.", perf: "Perf.", p_cont: "P-Cont", d_base: "Base", d_past: "Past", d_pp: "P.P.", d_s: "-s", d_ing: "-ing", help: "[How to use My Dictionary]\nYou can register verbs that the app doesn't support or that have unique changes.\nExample:\ngo, went, gone, goes, going\nOnce registered, it will be reflected in the puzzle conversion immediately." }
 };
+
+function showHelp() { alert(i18n[currentLang].help); }
 
 function handleFocus(elm) { lastValue = elm.value; elm.value = ""; }
 function handleBlur(elm) { if (elm.value === "") { elm.value = lastValue; convert(); } }
