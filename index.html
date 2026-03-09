@@ -116,13 +116,15 @@ function getBaseVerb(v) {
     return v;
 }
 
+const span=(t,c)=>`<span class="${c}">${t}</span>`;
+const cap=(s)=>s.charAt(0).toUpperCase()+s.slice(1);
+
 function convert(){
     const rawInput=document.getElementById('userInput').value.trim();
     if(!rawInput) { document.getElementById('resultText').innerHTML = ""; return; }
     
     const words = rawInput.replace(/\.|\?|!$/g,"").split(/\s+/);
-    // 最初の単語を主語、2番目を動詞とみなす超シンプル設計
-    let subject = words[0];
+    let subjectOrig = words[0];
     let verbRaw = words[1] || "";
     let rest = words.slice(2).join(" ");
     
@@ -132,62 +134,80 @@ function convert(){
     }
 
     let vBase = getBaseVerb(verbRaw);
-    let sLow = subject.toLowerCase();
+    let sLow = subjectOrig.toLowerCase();
+    let sMid = (sLow === 'i') ? 'I' : (currentMode === 'int' ? sLow : subjectOrig); 
+    let sInt = (sLow === 'i') ? 'I' : sLow; // 疑問文の文中の主語
+
     const is3rd = !['i','you'].includes(sLow) && !sLow.includes('and') && !sLow.endsWith('s');
     const isBe = (vBase === 'be');
 
-    const span=(t,c)=>`<span class="${c}">${t}</span>`;
-    
-    // パーツ生成
+    // 動詞パーツ生成
     let v_s = myDict[vBase] ? myDict[vBase].s : (vBase==='go'||vBase==='do'?vBase+'es':(vBase==='have'?'has':(vBase.endsWith('y')?vBase.slice(0,-1)+'ies':vBase+'s')));
     let v_pst = myDict[vBase] ? myDict[vBase].past : (defaultIrregulars[vBase]?defaultIrregulars[vBase].past:(vBase.endsWith('e')?vBase+'d':vBase+'ed'));
     let v_pp = myDict[vBase] ? myDict[vBase].pp : (defaultIrregulars[vBase]?defaultIrregulars[vBase].pp:(vBase.endsWith('e')?vBase+'d':vBase+'ed'));
     let v_ing = myDict[vBase] ? myDict[vBase].ing : (vBase.endsWith('e')?vBase.slice(0,-1)+'ing':vBase+'ing');
 
-    let res = "";
     let bePres = (sLow==='i')?'am':(is3rd?'is':'are');
     let bePast = (sLow==='i'||is3rd)?'was':'were';
+    let havePres = is3rd ? 'has' : 'have';
+
+    let res = "";
 
     if(currentMode==='pos'){
         if(tTime==='present'){
-            if(tAspect==='simple') res = `${subject} ${isBe?span(bePres,'c-be'):(is3rd?span(v_s,'c-v'):vBase)} ${rest}`;
-            else if(tAspect==='cont') res = `${subject} ${span(bePres,'c-be')} ${span(v_ing,'c-v')} ${rest}`;
-            else if(tAspect==='perf') res = `${subject} ${span(is3rd?'has':'have','c-aux')} ${span(v_pp,'c-v')} ${rest}`;
-            else res = `${subject} ${span(is3rd?'has':'have','c-aux')} ${span('been','c-be')} ${span(v_ing,'c-v')} ${rest}`;
+            if(tAspect==='simple') res = `${subjectOrig} ${isBe?span(bePres,'c-be'):(is3rd?span(v_s,'c-v'):vBase)} ${rest}`;
+            else if(tAspect==='cont') res = `${subjectOrig} ${span(bePres,'c-be')} ${span(v_ing,'c-v')} ${rest}`;
+            else if(tAspect==='perf') res = `${subjectOrig} ${span(havePres,'c-aux')} ${span(v_pp,'c-v')} ${rest}`;
+            else res = `${subjectOrig} ${span(havePres,'c-aux')} ${span('been','c-be')} ${span(v_ing,'c-v')} ${rest}`;
         } else if(tTime==='past'){
-            if(tAspect==='simple') res = `${subject} ${isBe?span(bePast,'c-be'):span(v_pst,'c-v')} ${rest}`;
-            else if(tAspect==='cont') res = `${subject} ${span(bePast,'c-be')} ${span(v_ing,'c-v')} ${rest}`;
-            else if(tAspect==='perf') res = `${subject} ${span('had','c-aux')} ${span(v_pp,'c-v')} ${rest}`;
-            else res = `${subject} ${span('had','c-aux')} ${span('been','c-be')} ${span(v_ing,'c-v')} ${rest}`;
+            if(tAspect==='simple') res = `${subjectOrig} ${isBe?span(bePast,'c-be'):span(v_pst,'c-v')} ${rest}`;
+            else if(tAspect==='cont') res = `${subjectOrig} ${span(bePast,'c-be')} ${span(v_ing,'c-v')} ${rest}`;
+            else if(tAspect==='perf') res = `${subjectOrig} ${span('had','c-aux')} ${span(v_pp,'c-v')} ${rest}`;
+            else res = `${subjectOrig} ${span('had','c-aux')} ${span('been','c-be')} ${span(v_ing,'c-v')} ${rest}`;
         } else {
             let futBase = isBe?span('be','c-be'):vBase;
-            if(tAspect==='simple') res = `${subject} ${span('will','c-aux')} ${futBase} ${rest}`;
-            else if(tAspect==='cont') res = `${subject} ${span('will','c-aux')} ${span('be','c-be')} ${span(v_ing,'c-v')} ${rest}`;
-            else if(tAspect==='perf') res = `${subject} ${span('will','c-aux')} ${span('have','c-aux')} ${span(v_pp,'c-v')} ${rest}`;
-            else res = `${subject} ${span('will','c-aux')} ${span('have','c-aux')} ${span('been','c-be')} ${span(v_ing,'c-v')} ${rest}`;
+            if(tAspect==='simple') res = `${subjectOrig} ${span('will','c-aux')} ${futBase} ${rest}`;
+            else if(tAspect==='cont') res = `${subjectOrig} ${span('will','c-aux')} ${span('be','c-be')} ${span(v_ing,'c-v')} ${rest}`;
+            else if(tAspect==='perf') res = `${subjectOrig} ${span('will','c-aux')} ${span('have','c-aux')} ${span(v_pp,'c-v')} ${rest}`;
+            else res = `${subjectOrig} ${span('will','c-aux')} ${span('have','c-aux')} ${span('been','c-be')} ${span(v_ing,'c-v')} ${rest}`;
         }
     } else if(currentMode==='neg'){
         let not = span('not','c-aux');
         if(tTime==='present'){
-            if(tAspect==='simple') res = isBe?`${subject} ${span(bePres,'c-be')} ${not} ${rest}`:`${subject} ${span(is3rd?'does':'do','c-aux')} ${not} ${vBase} ${rest}`;
-            else res = `${subject} ${span(bePres,'c-be')} ${not} ${tAspect==='cont'?span(v_ing,'c-v'):(tAspect==='perf'?span(v_pp,'c-v'):span('been','c-be')+' '+span(v_ing,'c-v'))} ${rest}`;
+            if(tAspect==='simple') res = isBe?`${subjectOrig} ${span(bePres,'c-be')} ${not} ${rest}`:`${subjectOrig} ${span(is3rd?'does':'do','c-aux')} ${not} ${vBase} ${rest}`;
+            else if(tAspect==='cont') res = `${subjectOrig} ${span(bePres,'c-be')} ${not} ${span(v_ing,'c-v')} ${rest}`;
+            else if(tAspect==='perf') res = `${subjectOrig} ${span(havePres,'c-aux')} ${not} ${span(v_pp,'c-v')} ${rest}`;
+            else res = `${subjectOrig} ${span(havePres,'c-aux')} ${not} ${span('been','c-be')} ${span(v_ing,'c-v')} ${rest}`;
         } else if(tTime==='past'){
-            if(tAspect==='simple') res = isBe?`${subject} ${span(bePast,'c-be')} ${not} ${rest}`:`${subject} ${span('did','c-aux')} ${not} ${vBase} ${rest}`;
-            else res = `${subject} ${span(bePast,'c-be')} ${not} ${tAspect==='cont'?span(v_ing,'c-v'):(tAspect==='perf'?span(v_pp,'c-v'):span('been','c-be')+' '+span(v_ing,'c-v'))} ${rest}`;
+            if(tAspect==='simple') res = isBe?`${subjectOrig} ${span(bePast,'c-be')} ${not} ${rest}`:`${subjectOrig} ${span('did','c-aux')} ${not} ${vBase} ${rest}`;
+            else if(tAspect==='cont') res = `${subjectOrig} ${span(bePast,'c-be')} ${not} ${span(v_ing,'c-v')} ${rest}`;
+            else if(tAspect==='perf') res = `${subjectOrig} ${span('had','c-aux')} ${not} ${span(v_pp,'c-v')} ${rest}`;
+            else res = `${subjectOrig} ${span('had','c-aux')} ${not} ${span('been','c-be')} ${span(v_ing,'c-v')} ${rest}`;
         } else {
-            res = `${subject} ${span('will','c-aux')} ${not} ${tAspect==='simple'?(isBe?span('be','c-be'):vBase):(tAspect==='cont'?span('be','c-be')+' '+span(v_ing,'c-v'):span('have','c-aux')+' '+(tAspect==='perf'?span(v_pp,'c-v'):span('been','c-be')+' '+span(v_ing,'c-v')))} ${rest}`;
+            let aux = `${span('will','c-aux')} ${not}`;
+            if(tAspect==='simple') res = `${subjectOrig} ${aux} ${isBe?span('be','c-be'):vBase} ${rest}`;
+            else if(tAspect==='cont') res = `${subjectOrig} ${aux} ${span('be','c-be')} ${span(v_ing,'c-v')} ${rest}`;
+            else if(tAspect==='perf') res = `${subjectOrig} ${aux} ${span('have','c-aux')} ${span(v_pp,'c-v')} ${rest}`;
+            else res = `${subjectOrig} ${aux} ${span('have','c-aux')} ${span('been','c-be')} ${span(v_ing,'c-v')} ${rest}`;
         }
     } else {
         // 疑問文
-        let qSubject = subject;
         if(tTime==='present'){
-            if(tAspect==='simple') res = isBe?`${span(bePres.charAt(0).toUpperCase()+bePres.slice(1),'c-be')} ${qSubject} ${rest}`:`${span(is3rd?'Does':'Do','c-aux')} ${qSubject} ${vBase} ${rest}`;
-            else res = `${span(bePres.charAt(0).toUpperCase()+bePres.slice(1),'c-be')} ${qSubject} ${tAspect==='cont'?span(v_ing,'c-v'):(tAspect==='perf'?span(v_pp,'c-v'):span('been','c-be')+' '+span(v_ing,'c-v'))} ${rest}`;
+            if(tAspect==='simple') res = isBe?`${span(cap(bePres),'c-be')} ${sInt} ${rest}`:`${span(is3rd?'Does':'Do','c-aux')} ${sInt} ${vBase} ${rest}`;
+            else if(tAspect==='cont') res = `${span(cap(bePres),'c-be')} ${sInt} ${span(v_ing,'c-v')} ${rest}`;
+            else if(tAspect==='perf') res = `${span(cap(havePres),'c-aux')} ${sInt} ${span(v_pp,'c-v')} ${rest}`;
+            else res = `${span(cap(havePres),'c-aux')} ${sInt} ${span('been','c-be')} ${span(v_ing,'c-v')} ${rest}`;
         } else if(tTime==='past'){
-            if(tAspect==='simple') res = isBe?`${span(bePast.charAt(0).toUpperCase()+bePast.slice(1),'c-be')} ${qSubject} ${rest}`:`${span('Did','c-aux')} ${qSubject} ${vBase} ${rest}`;
-            else res = `${span(bePast.charAt(0).toUpperCase()+bePast.slice(1),'c-be')} ${qSubject} ${tAspect==='cont'?span(v_ing,'c-v'):(tAspect==='perf'?span(v_pp,'c-v'):span('been','c-be')+' '+span(v_ing,'c-v'))} ${rest}`;
+            if(tAspect==='simple') res = isBe?`${span(cap(bePast),'c-be')} ${sInt} ${rest}`:`${span('Did','c-aux')} ${sInt} ${vBase} ${rest}`;
+            else if(tAspect==='cont') res = `${span(cap(bePast),'c-be')} ${sInt} ${span(v_ing,'c-v')} ${rest}`;
+            else if(tAspect==='perf') res = `${span('Had','c-aux')} ${sInt} ${span(v_pp,'c-v')} ${rest}`;
+            else res = `${span('Had','c-aux')} ${sInt} ${span('been','c-be')} ${span(v_ing,'c-v')} ${rest}`;
         } else {
-            res = `${span('Will','c-aux')} ${qSubject} ${tAspect==='simple'?(isBe?span('be','c-be'):vBase):(tAspect==='cont'?span('be','c-be')+' '+span(v_ing,'c-v'):span('have','c-aux')+' '+(tAspect==='perf'?span(v_pp,'c-v'):span('been','c-be')+' '+span(v_ing,'c-v')))} ${rest}`;
+            let aux = span('Will','c-aux');
+            if(tAspect==='simple') res = `${aux} ${sInt} ${isBe?span('be','c-be'):vBase} ${rest}`;
+            else if(tAspect==='cont') res = `${aux} ${sInt} ${span('be','c-be')} ${span(v_ing,'c-v')} ${rest}`;
+            else if(tAspect==='perf') res = `${aux} ${sInt} ${span('have','c-aux')} ${span(v_pp,'c-v')} ${rest}`;
+            else res = `${aux} ${sInt} ${span('have','c-aux')} ${span('been','c-be')} ${span(v_ing,'c-v')} ${rest}`;
         }
     }
 
