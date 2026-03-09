@@ -22,9 +22,13 @@ input[type="text"]:focus{border-color: var(--main); outline: none;}
 .button-group{display:grid;grid-template-columns:repeat(3,1fr);gap:5px;margin-bottom:8px}
 .label{font-size:0.7rem;color:#606770;margin:8px 0 4px 0;font-weight:bold}
 
+/* 時制マトリックス */
 .tense-matrix { display: flex; flex-direction: column; gap: 4px; }
 .tense-row { display: flex; align-items: center; gap: 4px; }
-.aspect-label { flex: 0 0 65px; font-size: 0.65rem; font-weight: bold; color: #444; background: #eee; padding: 6px 2px; border-radius: 4px; text-align: center; }
+.aspect-label { flex: 0 0 65px; font-size: 0.65rem; font-weight: bold; color: #444; background: #eee; padding: 8px 2px; border-radius: 4px; text-align: center; transition: 0.2s; border: none; }
+/* 選択中のアスペクト（左側）を緑に */
+.aspect-label.active { background-color: var(--part); color: white; }
+
 .time-btns { display: flex; flex: 1; gap: 4px; }
 .time-btns button { flex: 1; padding: 8px 0; font-size: 0.75rem; border: none; border-radius: 6px; background-color: #e4e6eb; cursor: pointer; font-weight: bold; transition: 0.2s; }
 .time-btns button.active { background-color: var(--main); color: white; }
@@ -229,36 +233,38 @@ function renderTenseMatrix(){
     matrix.innerHTML = '';
     const aspects = ['simple', 'cont', 'perf', 'p_cont'];
     const times = ['present', 'past', 'future'];
+    
     aspects.forEach(a => {
         const row = document.createElement('div'); row.className = 'tense-row';
-        const label = document.createElement('div'); label.className = 'aspect-label';
-        label.innerText = t[a]; row.appendChild(label);
+        
+        // アスペクトのラベル（ボタンとして実装して光るように）
+        const label = document.createElement('div'); 
+        label.className = 'aspect-label' + (a === tAspect ? ' active' : '');
+        label.innerText = t[a];
+        row.appendChild(label);
+        
         const btns = document.createElement('div'); btns.className = 'time-btns';
         times.forEach(ti => {
-            const btn = document.createElement('button'); btn.innerText = t[ti];
+            const btn = document.createElement('button');
+            btn.innerText = t[ti];
             if(ti === tTime && a === tAspect) btn.classList.add('active');
-            btn.onclick = () => updateTense(ti, a); btns.appendChild(btn);
+            btn.onclick = () => updateTense(ti, a);
+            btns.appendChild(btn);
         });
-        row.appendChild(btns); matrix.appendChild(row);
+        row.appendChild(btns);
+        matrix.appendChild(row);
     });
 }
 
 function setLang(l){
-    currentLang = l; 
-    document.getElementById('btn-ja').classList.toggle('active', l==='ja'); 
-    document.getElementById('btn-en').classList.toggle('active', l==='en');
-    
-    // ラベルの更新
+    currentLang = l; document.getElementById('btn-ja').classList.toggle('active', l==='ja'); document.getElementById('btn-en').classList.toggle('active', l==='en');
     ['title','lbl-input','lbl-result','lbl-type','lbl-tense','lbl-dict','mode-pos','mode-neg','mode-int'].forEach(id => {
         let key = id.replace('lbl-','').replace('mode-',''); if(document.getElementById(id)) document.getElementById(id).innerText = i18n[l][key];
     });
-
-    // 動詞入力欄のプレースホルダー更新
     ['d-base','d-past','d-pp','d-s','d-ing'].forEach(id => {
         let key = id.replace('-','_');
         document.getElementById(id).placeholder = i18n[l][key];
     });
-
     renderTenseMatrix(); convert();
 }
 window.onload = () => { renderDict(); setLang('ja'); };
