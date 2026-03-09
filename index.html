@@ -17,7 +17,6 @@ body{font-family:'Segoe UI',Meiryo,sans-serif;background-color:var(--bg);padding
 .container{max-width:600px;margin:auto;background:white;padding:15px;border-radius:15px;box-shadow:0 5px 15px rgba(0,0,0,0.1)}
 
 .header-row{display:flex;justify-content:space-between;align-items:center;margin-bottom:10px}
-/* タイトル文字が長くなったので少し小さく調整 */
 h1{margin:0;font-size:1.05rem;color:var(--main);flex-grow:1}
 .lang-switch{display:flex;gap:2px}
 .lang-btn{padding:3px 8px;font-size:0.7rem;cursor:pointer;border:1px solid #ddd;border-radius:4px;background:#fff}
@@ -51,7 +50,7 @@ input[type="text"]:focus{border-color: var(--main); outline: none;}
 .dict-list{max-height:80px;overflow-y:auto;font-size:0.65rem;margin-top:5px}
 .dict-item{display:flex;justify-content:space-between;padding:3px;border-bottom:1px solid #f0f0f0}
 
-/* カスタムモーダル（ヘルプ用） */
+/* カスタムモーダル */
 .modal-overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 1000; justify-content: center; align-items: center; padding: 20px; box-sizing: border-box; }
 .modal-content { background: white; padding: 20px; border-radius: 15px; max-width: 400px; width: 100%; position: relative; box-shadow: 0 10px 25px rgba(0,0,0,0.2); animation: pop 0.3s ease; }
 @keyframes pop { from { transform: scale(0.8); opacity: 0; } to { transform: scale(1); opacity: 1; } }
@@ -120,11 +119,10 @@ let myDict = JSON.parse(localStorage.getItem('myTenseDict')) || {};
 let lastValue = "You play tennis";
 
 const i18n = {
-    ja: { title: "Puzzle for English Tense", input: "1. 例文入力", result: "2. パズルの結果", type: "3. 文のタイプ", tense: "4. 時制を選択", dict: "5. 動詞を追加", pos: "肯定", neg: "否定", int: "疑問", present: "現在", past: "過去", future: "未来", simple: "基本形", cont: "進行形", perf: "完了形", p_cont: "完進形", d_base: "原形", d_past: "過去", d_pp: "過去分", d_s: "-s", d_ing: "-ing", helpT: "マイ辞書の使い方", help: "アプリが対応していない動詞や、特殊な変化をする単語を登録できます。\n\n【登録例】\n原形: go\n過去: went\n過去分: gone\n-s: goes\n-ing: going\n\n登録すると、パズル変換に即座に反映されます。" },
+    ja: { title: "Puzzle for English Tense", input: "1. 例文入力", result: "2. パズルの結果", type: "3. 文의タイプ", tense: "4. 時制を選択", dict: "5. 動詞を追加", pos: "肯定", neg: "否定", int: "疑問", present: "現在", past: "過去", future: "未来", simple: "基本形", cont: "進行形", perf: "完了形", p_cont: "完進形", d_base: "原形", d_past: "過去", d_pp: "過去分", d_s: "-s", d_ing: "-ing", helpT: "マイ辞書の使い方", help: "アプリが対応していない動詞や、特殊な変化をする単語を登録できます。\n\n【登録例】\n原形: go\n過去: went\n過去分: gone\n-s: goes\n-ing: going\n\n登録すると、パズル変換に即座に反映されます。" },
     en: { title: "Puzzle for English Tense", input: "1. Sentence", result: "2. Result", type: "3. Type", tense: "4. Tense", dict: "5. Add Verb", pos: "Aff.", neg: "Neg.", int: "Int.", present: "Pres.", past: "Past", future: "Fut.", simple: "Simple", cont: "Cont.", perf: "Perf.", p_cont: "P-Cont", d_base: "Base", d_past: "Past", d_pp: "P.P.", d_s: "-s", d_ing: "-ing", helpT: "How to use", help: "You can register verbs that the app doesn't support yet.\n\n[Example]\nBase: go\nPast: went\nPP: gone\n-s: goes\n-ing: going\n\nRegistered verbs are applied to the puzzle immediately." }
 };
 
-// モーダル制御
 function showHelp() {
     document.getElementById('modalTitle').innerText = i18n[currentLang].helpT;
     document.getElementById('modalBody').innerText = i18n[currentLang].help;
@@ -153,7 +151,7 @@ function saveVerb(){
 
 function deleteVerb(b){ delete myDict[b]; localStorage.setItem('myTenseDict', JSON.stringify(myDict)); renderDict(); convert(); }
 function renderDict(){
-    const list = document.getElementById('dictList'); list.innerHTML = '';
+    const list = document.getElementById('dictList'); if(!list) return; list.innerHTML = '';
     for(let b in myDict){
         const item = document.createElement('div'); item.className = 'dict-item';
         item.innerHTML = `<span><b>${b}</b></span><button style="background:var(--accent);color:white;border:none;border-radius:3px;font-size:0.5rem" onclick="deleteVerb('${b}')">×</button>`;
@@ -213,7 +211,7 @@ function convert(){
             let fB = isBe?span('be','c-be'):vBase;
             if(tAspect==='simple') res = `${subjectOrig} ${span('will','c-aux')} ${fB} ${rest}`;
             else if(tAspect==='cont') res = `${subjectOrig} ${span('will','c-aux')} ${span('be','c-be')} ${span(v_ing,'c-v')} ${rest}`;
-            else if(tAspect==='perf) res = `${subjectOrig} ${span('will','c-aux')} ${span('have','c-aux')} ${span(v_pp,'c-v')} ${rest}`;
+            else if(tAspect==='perf') res = `${subjectOrig} ${span('will','c-aux')} ${span('have','c-aux')} ${span(v_pp,'c-v')} ${rest}`;
             else res = `${subjectOrig} ${span('will','c-aux')} ${span('have','c-aux')} ${span('been','c-be')} ${span(v_ing,'c-v')} ${rest}`;
         }
     } else if(currentMode==='neg'){
@@ -261,15 +259,11 @@ function convert(){
 
 function setMode(m, e){ currentMode = m; document.querySelectorAll('.button-group button').forEach(b => b.classList.remove('active')); e.classList.add('active'); convert(); }
 
-function updateTense(time, aspect){
-    tTime = time; tAspect = aspect;
-    renderTenseMatrix();
-    convert();
-}
+function updateTense(time, aspect){ tTime = time; tAspect = aspect; renderTenseMatrix(); convert(); }
 
 function renderTenseMatrix(){
     const matrix = document.getElementById('tenseMatrix'), t = i18n[currentLang];
-    matrix.innerHTML = '';
+    if(!matrix) return; matrix.innerHTML = '';
     const aspects = ['simple', 'cont', 'perf', 'p_cont'];
     const times = ['present', 'past', 'future'];
     aspects.forEach(a => {
@@ -304,11 +298,8 @@ function setLang(l){
 }
 window.onload = () => { renderDict(); setLang('ja'); };
 
-// Service Worker登録（PWA用）
 if ('serviceWorker' in navigator) {
-  navigator.serviceWorker.register('sw.js').then(() => {
-    console.log('Service Worker Registered');
-  });
+  navigator.serviceWorker.register('sw.js').then(() => { console.log('SW OK'); });
 }
 </script>
 </body>
