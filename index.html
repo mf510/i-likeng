@@ -2,27 +2,34 @@
 <html lang="ja">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>English Tense Puzzle - Final</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>English Tense Puzzle Pro</title>
 <style>
-:root { --main: #007bff; --accent: #ff4757; --part: #2ed573; --aux: #ffa502; }
-body{font-family:'Segoe UI',Meiryo,sans-serif;background-color:#f0f2f5;padding:20px;color:#1c1e21;margin:0}
-.container{max-width:600px;margin:auto;background:white;padding:25px;border-radius:20px;box-shadow:0 10px 25px rgba(0,0,0,0.1)}
+:root { --main: #007bff; --accent: #ff4757; --part: #2ed573; --aux: #ffa502; --bg: #f0f2f5; }
+body{font-family:'Segoe UI',Meiryo,sans-serif;background-color:var(--bg);padding:10px;color:#1c1e21;margin:0;padding-bottom:50px}
+.container{max-width:600px;margin:auto;background:white;padding:20px;border-radius:20px;box-shadow:0 10px 25px rgba(0,0,0,0.1)}
 .lang-switch{display:flex;justify-content:flex-end;gap:5px;margin-bottom:10px}
 .lang-btn{padding:5px 10px;font-size:0.7rem;cursor:pointer;border:1px solid #ddd;border-radius:5px;background:#fff}
 .lang-btn.active{background:var(--main);color:white;border-color:var(--main)}
 h1{text-align:center;color:var(--main);margin:10px 0;font-size:1.3rem}
-input{width:100%;padding:15px;margin:10px 0;border:2px solid #ddd;border-radius:10px;box-sizing:border-box;font-size:1.1rem;outline:none;text-align:center}
-.result-box{background:#f8f9fa;border:2px dashed var(--main);padding:20px;margin:15px 0;font-weight:bold;color:#333;font-size:1.4rem;border-radius:12px;text-align:center;min-height:1.5em;line-height:1.4;word-wrap:break-word}
-.button-group,.tense-grid{display:grid;gap:8px;margin-bottom:10px}
+input[type="text"]{width:100%;padding:12px;margin:10px 0;border:2px solid #ddd;border-radius:10px;box-sizing:border-box;font-size:1.1rem;outline:none;text-align:center}
+.result-box{background:#f8f9fa;border:2px dashed var(--main);padding:15px;margin:10px 0;font-weight:bold;color:#333;font-size:1.3rem;border-radius:12px;text-align:center;min-height:1.5em;line-height:1.4;word-wrap:break-word}
+.button-group,.tense-grid{display:grid;gap:6px;margin-bottom:10px}
 .button-group{grid-template-columns:repeat(3,1fr)}
 .tense-grid{grid-template-columns:repeat(3,1fr)}
 button{padding:10px 2px;border:none;border-radius:8px;background-color:#e4e6eb;cursor:pointer;font-weight:bold;font-size:0.75rem;transition:0.2s}
 button.active{background-color:var(--main);color:white}
 .label{font-size:0.75rem;color:#606770;margin-top:10px;margin-bottom:5px;font-weight:bold}
-.c-aux { color: var(--aux); } 
-.c-be { color: var(--part); }  
-.c-v { color: var(--accent); } 
+.c-aux { color: var(--aux); } .c-be { color: var(--part); } .c-v { color: var(--accent); }
+
+/* Dictionary Section */
+.dict-section{margin-top:30px;padding-top:20px;border-top:2px solid #eee}
+.dict-form{display:grid;grid-template-columns:1fr 1fr;gap:8px;background:#f9f9f9;padding:15px;border-radius:12px}
+.dict-form input{padding:8px;font-size:0.9rem;border:1px solid #ccc;border-radius:5px;text-align:center}
+.save-btn{grid-column:span 2;background:var(--part);color:white;padding:10px;border-radius:8px;font-weight:bold;margin-top:5px}
+.dict-list{margin-top:15px;max-height:200px;overflow-y:auto;font-size:0.8rem}
+.dict-item{display:flex;justify-content:space-between;align-items:center;padding:8px;border-bottom:1px solid #eee;background:white;margin-bottom:4px;border-radius:5px}
+.del-btn{background:var(--accent);color:white;padding:2px 8px;border-radius:4px;font-size:0.7rem}
 </style>
 </head>
 <body>
@@ -31,9 +38,9 @@ button.active{background-color:var(--main);color:white}
         <button id="btn-ja" class="lang-btn active" onclick="setLang('ja')">JP</button>
         <button id="btn-en" class="lang-btn" onclick="setLang('en')">EN</button>
     </div>
-    <h1 id="title">English Tense Puzzle</h1>
+    <h1 id="title">English Tense Puzzle Pro</h1>
     <div class="label" id="lbl-input">1. 例文を入力</div>
-    <input type="text" id="userInput" value="I like tennis" oninput="convert()" onfocus="this.select()">
+    <input type="text" id="userInput" value="Mrs. Green plays tennis" oninput="convert()" onfocus="this.select()">
     <div class="label" id="lbl-result">2. パズルの組み立て結果</div>
     <div class="result-box" id="resultText"></div>
     <div class="label" id="lbl-type">3. 文のタイプ</div>
@@ -44,131 +51,204 @@ button.active{background-color:var(--main);color:white}
     </div>
     <div class="label" id="lbl-tense">4. 時制を選択</div>
     <div class="tense-grid" id="tenseBtns"></div>
+
+    <div class="dict-section">
+        <div class="label" id="lbl-dict-title">📕 辞書に動詞を追加</div>
+        <div class="dict-form">
+            <input type="text" id="d-base" placeholder="原形 (fly)">
+            <input type="text" id="d-past" placeholder="過去 (flew)">
+            <input type="text" id="d-pp" placeholder="過去分詞 (flown)">
+            <input type="text" id="d-s" placeholder="三単現 (flies)">
+            <input type="text" id="d-ing" placeholder="ing形 (flying)">
+            <button class="save-btn" onclick="saveVerb()">この動詞を保存する</button>
+        </div>
+        <div class="dict-list" id="dictList"></div>
+    </div>
 </div>
 
 <script>
 let currentMode='pos', tTime='present', tAspect='simple', currentLang='ja';
+let myDict = JSON.parse(localStorage.getItem('myTenseDict')) || {};
+
 const i18n = {
-    ja: { title: "English Tense Puzzle", input: "1. 例文を入力", result: "2. パズルの結果", type: "3. 文のタイプ", tense: "4. 時制を選択", pos: "肯定", neg: "否定", int: "疑問", present: "現在", past: "過去", future: "未来", simple: "形", cont: "進行", perf: "完了", p_cont: "完進" },
-    en: { title: "English Tense Puzzle", input: "1. Enter a sentence", result: "2. Puzzle Result", type: "3. Sentence Type", tense: "4. Select Tense", pos: "Affirmative", neg: "Negative", int: "Interrogative", present: "Pres.", past: "Past", future: "Fut.", simple: "Simp.", cont: "Cont.", perf: "Perf.", p_cont: "P-Cont" }
+    ja: { title: "English Tense Puzzle Pro", input: "1. 例文を入力", result: "2. パズルの結果", type: "3. 文のタイプ", tense: "4. 時制を選択", pos: "肯定", neg: "否定", int: "疑問", present: "現在", past: "過去", future: "未来", simple: "形", cont: "進行", perf: "完了", p_cont: "完進", dict: "📕 辞書に動詞を追加" },
+    en: { title: "English Tense Puzzle Pro", input: "1. Enter a sentence", result: "2. Puzzle Result", type: "3. Sentence Type", tense: "4. Select Tense", pos: "Affirmative", neg: "Negative", int: "Interrogative", present: "Pres.", past: "Past", future: "Fut.", simple: "Simp.", cont: "Cont.", perf: "Perf.", p_cont: "P-Cont", dict: "📕 Add Verb to Dictionary" }
 };
-const irregulars = {
-    'become':{past:'became',pp:'become'},'begin':{past:'began',pp:'begun'},'break':{past:'broke',pp:'broken'},
-    'bring':{past:'brought',pp:'brought'},'build':{past:'built',pp:'built'},'buy':{past:'bought',pp:'bought'},
-    'catch':{past:'caught',pp:'caught'},'choose':{past:'chose',pp:'chosen'},'come':{past:'came',pp:'come'},
-    'cut':{past:'cut',pp:'cut'},'do':{past:'did',pp:'done'},'draw':{past:'drew',pp:'drawn'},
+
+const defaultIrregulars = {
+    'become':{past:'became',pp:'become'},'begin':{past:'began',pp:'begun'},'bend':{past:'bent',pp:'bent'},
+    'break':{past:'broke',pp:'broken'},'bring':{past:'brought',pp:'brought'},'build':{past:'built',pp:'built'},
+    'buy':{past:'bought',pp:'bought'},'catch':{past:'caught',pp:'caught'},'choose':{past:'chose',pp:'chosen'},
+    'come':{past:'came',pp:'come'},'cost':{past:'cost',pp:'cost'},'cut':{past:'cut',pp:'cut'},
+    'do':{past:'did',pp:'done'},'draw':{past:'drew',pp:'drawn'},'drink':{past:'drank',pp:'drunk'},
     'drive':{past:'drove',pp:'driven'},'eat':{past:'ate',pp:'eaten'},'fall':{past:'fell',pp:'fallen'},
     'feel':{past:'felt',pp:'felt'},'find':{past:'found',pp:'found'},'fly':{past:'flew',pp:'flown'},
     'forget':{past:'forgot',pp:'forgotten'},'get':{past:'got',pp:'gotten'},'give':{past:'gave',pp:'given'},
     'go':{past:'went',pp:'gone'},'grow':{past:'grew',pp:'grown'},'have':{past:'had',pp:'had'},
-    'hear':{past:'heard',pp:'heard'},'hit':{past:'hit',pp:'hit'},'keep':{past:'kept',pp:'kept'},
-    'know':{past:'knew',pp:'known'},'leave':{past:'left',pp:'left'},'lend':{past:'lent',pp:'lent'},
+    'hear':{past:'heard',pp:'heard'},'hide':{past:'hid',pp:'hidden'},'hit':{past:'hit',pp:'hit'},
+    'hold':{past:'held',pp:'held'},'keep':{past:'kept',pp:'kept'},'know':{past:'knew',pp:'known'},
+    'lead':{past:'led',pp:'led'},'leave':{past:'left',pp:'left'},'lend':{past:'lent',pp:'lent'},
     'let':{past:'let',pp:'let'},'lose':{past:'lost',pp:'lost'},'make':{past:'made',pp:'made'},
-    'meet':{past:'met',pp:'met'},'put':{past:'put',pp:'put'},'read':{past:'read',pp:'read'},
-    'ride':{past:'rode',pp:'ridden'},'run':{past:'ran',pp:'run'},'say':{past:'said',pp:'said'},
-    'see':{past:'saw',pp:'seen'},'sell':{past:'sold',pp:'sold'},'send':{past:'sent',pp:'sent'},
+    'mean':{past:'meant',pp:'meant'},'meet':{past:'met',pp:'met'},'pay':{past:'paid',pp:'paid'},
+    'put':{past:'put',pp:'put'},'read':{past:'read',pp:'read'},'ride':{past:'rode',pp:'ridden'},
+    'run':{past:'ran',pp:'run'},'say':{past:'said',pp:'said'},'see':{past:'saw',pp:'seen'},
+    'sell':{past:'sold',pp:'sold'},'send':{past:'sent',pp:'sent'},'shake':{past:'shook',pp:'shaken'},
     'shine':{past:'shone',pp:'shone'},'show':{past:'showed',pp:'shown'},'sing':{past:'sang',pp:'sung'},
     'sink':{past:'sank',pp:'sunk'},'sit':{past:'sat',pp:'sat'},'sleep':{past:'slept',pp:'slept'},
     'speak':{past:'spoke',pp:'spoken'},'spend':{past:'spent',pp:'spent'},'stand':{past:'stood',pp:'stood'},
-    'swim':{past:'swam',pp:'swum'},'take':{past:'took',pp:'taken'},'teach':{past:'taught',pp:'taught'},
-    'tell':{past:'told',pp:'told'},'think':{past:'thought',pp:'thought'},'throw':{past:'threw',pp:'thrown'},
-    'understand':{past:'understood',pp:'understood'},'wake':{past:'woke',pp:'woken'},'win':{past:'won',pp:'won'},
+    'steal':{past:'stole',pp:'stolen'},'swim':{past:'swam',pp:'swum'},'take':{past:'took',pp:'taken'},
+    'teach':{past:'taught',pp:'taught'},'tell':{past:'told',pp:'told'},'think':{past:'thought',pp:'thought'},
+    'throw':{past:'threw',pp:'thrown'},'understand':{past:'understood',pp:'understood'},
+    'wake':{past:'woke',pp:'woken'},'wear':{past:'wore',pp:'worn'},'win':{past:'won',pp:'won'},
     'write':{past:'wrote',pp:'written'}
 };
 
-function setLang(lang){ currentLang = lang; document.getElementById('btn-ja').classList.toggle('active', lang==='ja'); document.getElementById('btn-en').classList.toggle('active', lang==='en'); updateLabels(); renderTenseButtons(); convert(); }
-function updateLabels(){ const t = i18n[currentLang]; document.getElementById('lbl-input').innerText = t.input; document.getElementById('lbl-result').innerText = t.result; document.getElementById('lbl-type').innerText = t.type; document.getElementById('lbl-tense').innerText = t.tense; document.getElementById('mode-pos').innerText = t.pos; document.getElementById('mode-neg').innerText = t.neg; document.getElementById('mode-int').innerText = t.int; }
-function renderTenseButtons(){ const container = document.getElementById('tenseBtns'); container.innerHTML = ''; const t = i18n[currentLang]; const aspects = ['simple', 'cont', 'perf', 'p_cont']; const times = ['present', 'past', 'future']; aspects.forEach(aspect => { times.forEach(time => { const btn = document.createElement('button'); btn.innerText = `${t[time]}${t[aspect]}`; if(time === tTime && aspect === tAspect) btn.className = 'active'; btn.onclick = (e) => updateTense(time, aspect, e.target); container.appendChild(btn); }); }); }
-const span=(txt,cls)=>`<span class="${cls}">${txt}</span>`;
-const cap=(s)=>s.charAt(0).toUpperCase()+s.slice(1);
+function saveVerb(){
+    const b = document.getElementById('d-base').value.trim().toLowerCase();
+    const p = document.getElementById('d-past').value.trim().toLowerCase();
+    const pp = document.getElementById('d-pp').value.trim().toLowerCase();
+    const s = document.getElementById('d-s').value.trim().toLowerCase();
+    const ing = document.getElementById('d-ing').value.trim().toLowerCase();
+    if(!b || !p || !pp || !s || !ing) { alert("全ての項目を入力してください"); return; }
+    myDict[b] = { past:p, pp:pp, s:s, ing:ing };
+    localStorage.setItem('myTenseDict', JSON.stringify(myDict));
+    renderDict();
+    ['d-base','d-past','d-pp','d-s','d-ing'].forEach(id=>document.getElementById(id).value='');
+    convert();
+}
+
+function deleteVerb(b){
+    delete myDict[b];
+    localStorage.setItem('myTenseDict', JSON.stringify(myDict));
+    renderDict();
+    convert();
+}
+
+function renderDict(){
+    const list = document.getElementById('dictList');
+    list.innerHTML = '';
+    for(let b in myDict){
+        const item = document.createElement('div');
+        item.className = 'dict-item';
+        item.innerHTML = `<span><b>${b}</b> (${myDict[b].past}, ${myDict[b].pp})</span><button class="del-btn" onclick="deleteVerb('${b}')">削除</button>`;
+        list.appendChild(item);
+    }
+}
+
+function isVerb(w) {
+    if(!w) return false;
+    let v = w.toLowerCase().replace(/[^a-z]/g, "");
+    if (/^(am|is|are|was|were|be|do|does|did|has|have|had|will)$/.test(v)) return true;
+    if (myDict[v] || defaultIrregulars[v]) return true;
+    for (let b in myDict) if (myDict[b].past === v || myDict[b].pp === v) return true;
+    for (let b in defaultIrregulars) if (defaultIrregulars[b].past === v || defaultIrregulars[b].pp === v) return true;
+    if (v.endsWith('ing') || v.endsWith('ed') || v.endsWith('s')) return true;
+    return false;
+}
 
 function getBaseVerb(v) {
-    v = v.toLowerCase();
+    v = v.toLowerCase().replace(/[^a-z]/g, "");
     if (/^(am|is|are|was|were|be)$/.test(v)) return 'be';
-    for (let base in irregulars) { if (irregulars[base].past === v || irregulars[base].pp === v) return base; }
+    for (let b in myDict) if (myDict[b].past === v || myDict[b].pp === v || myDict[b].s === v || myDict[b].ing === v) return b;
+    for (let b in defaultIrregulars) if (defaultIrregulars[b].past === v || defaultIrregulars[b].pp === v) return b;
     if (v.endsWith('ies')) return v.slice(0, -3) + 'y';
-    if (v.endsWith('es')) { if (/sses$|shes$|ches$|xes$/.test(v)) return v.slice(0, -2); if (v === 'goes') return 'go'; if (v === 'does') return 'do'; }
+    if (v.endsWith('es')) {
+        if (/sses$|shes$|ches$|xes$/.test(v)) return v.slice(0, -2);
+        if (v === 'goes') return 'go'; if (v === 'does') return 'do';
+    }
     if (v.endsWith('s') && !v.endsWith('ss')) return v.slice(0, -1);
-    if (v.endsWith('ed')) { if (v.endsWith('ied')) return v.slice(0, -3) + 'y'; if (v.length > 3 && v[v.length-3] === v[v.length-4]) return v.slice(0, -3); return v.slice(0, -2); }
+    if (v.endsWith('ed')) {
+        if (v.endsWith('ied')) return v.slice(0, -3) + 'y';
+        if (v.length > 3 && v[v.length-3] === v[v.length-4]) return v.slice(0, -3);
+        return v.slice(0, -2);
+    }
     return v;
 }
 
 function convert(){
     const rawInput=document.getElementById('userInput').value.trim();
     if(!rawInput) { document.getElementById('resultText').innerHTML = ""; return; }
-    const words = rawInput.replace(/\.|\?|!$/g,"").split(/\s+/);
-    let s = (words[0].toLowerCase() === 'i') ? 'I' : words[0].toLowerCase();
-    let v_in = words[1] ? words[1].toLowerCase() : "";
-    let rest = words.slice(2).join(" "); // 3語目以降は絶対に加工しない
+    const words = rawInput.replace(/\?|!$/g,"").split(/\s+/);
+    let subjectArr = [], verbIdx = -1;
+    const honorifics = /^(mr\.|mrs\.|ms\.|miss|dr\.|prof\.|rev\.|capt\.|sir|madam)$/i;
+
+    for(let i=0; i<words.length; i++) {
+        if(honorifics.test(words[i]) && i+1 < words.length) {
+            subjectArr.push(words[i], words[i+1]); i++;
+            for(let j=i+1; j<words.length; j++){ if(isVerb(words[j])){ verbIdx = j; break; } subjectArr.push(words[j]); }
+            break;
+        }
+        if(isVerb(words[i])) { verbIdx = i; break; }
+        subjectArr.push(words[i]);
+    }
+    if(verbIdx === -1) { document.getElementById('resultText').innerHTML = rawInput + "."; return; }
+
+    let rawS = subjectArr.join(" "), s = (rawS.toLowerCase() === 'i') ? 'I' : rawS;
+    let v_in = words[verbIdx], v = getBaseVerb(v_in), r = words.slice(verbIdx + 1).join(" ");
+    const isBe = (v === 'be'), s_low = rawS.toLowerCase();
+    const is3rd = honorifics.test(subjectArr[0]) || /he|she|it/i.test(s_low) || (s_low!=='i' && s_low!=='you' && !s_low.includes('and') && !s_low.endsWith('s'));
     
-    if(!v_in) { document.getElementById('resultText').innerHTML = cap(s) + "."; return; }
-    
-    let v = getBaseVerb(v_in);
-    const isBe = (v === 'be');
-    const is3rd=/he|she|it/i.test(s)||(s.toLowerCase()!=='i'&&s.toLowerCase()!=='you'&&!s.includes('and')&&!s.endsWith('s'));
-    
-    const bP=(s.toLowerCase()==='i')?'am':(is3rd?'is':'are');
-    const bPa=(s.toLowerCase()==='i'||is3rd)?'was':'were';
+    const bP=(s_low==='i')?'am':(is3rd?'is':'are'), bPa=(s_low==='i'||is3rd)?'was':'were';
     const p_will = span('will', 'c-aux'), p_not = span('not', 'c-aux');
     const p_have = (is3rd && tTime==='present') ? span('has','c-aux') : (tTime==='past' ? span('had','c-aux') : span('have','c-aux'));
     
-    const v_ing = isBe ? span('being','c-v') : (v.endsWith('e')?v.slice(0,-1)+span('ing','c-v'):v+span('ing','c-v'));
-    const v_pp = isBe ? span('been','c-be') : (irregulars[v]?span(irregulars[v].pp,'c-v'):(v.endsWith('e')?v+span('d','c-v'):v+span('ed','c-v')));
-    const v_pst = isBe ? span(bPa,'c-be') : (irregulars[v]?span(irregulars[v].past,'c-v'):(v.endsWith('e')?v+span('d','c-v'):v+span('ed','c-v')));
+    // 動詞の変化（辞書優先）
+    const v_ing = isBe ? span('being','c-v') : (myDict[v] ? span(myDict[v].ing,'c-v') : (v.endsWith('e')?v.slice(0,-1)+span('ing','c-v'):v+span('ing','c-v')));
+    const v_pp = isBe ? span('been','c-be') : (myDict[v]?span(myDict[v].pp,'c-v') : (defaultIrregulars[v]?span(defaultIrregulars[v].pp,'c-v'):(v.endsWith('e')?v+span('d','c-v'):v+span('ed','c-v'))));
+    const v_pst = isBe ? span(bPa,'c-be') : (myDict[v]?span(myDict[v].past,'c-v') : (defaultIrregulars[v]?span(defaultIrregulars[v].past,'c-v'):(v.endsWith('e')?v+span('d','c-v'):v+span('ed','c-v'))));
     
     let v_pre = v;
     if(!isBe && is3rd) {
-        if (v==='go'||v==='do') v_pre = v+span('es','c-v');
+        if(myDict[v]) v_pre = span(myDict[v].s,'c-v');
+        else if (v==='go'||v==='do') v_pre = v+span('es','c-v');
         else if(v==='have') v_pre = 'ha'+span('s','c-v');
         else if(v.endsWith('y') && !/[aeiou]y$/.test(v)) v_pre = v.slice(0,-1)+span('ies','c-v');
         else if(/s$|sh$|ch$|x$/.test(v)) v_pre = v+span('es','c-v');
         else v_pre = v+span('s','c-v');
     }
     
-    const capS = (s==='I')?'I':cap(s);
     let res="";
-
     if(currentMode==='pos'){
         if(tTime==='present'){
-            if(tAspect==='simple') res = isBe ? `${capS} ${span(bP,'c-be')} ${rest}`:`${capS} ${v_pre} ${rest}`;
-            else if(tAspect==='cont') res=`${capS} ${span(bP,'c-be')} ${v_ing} ${rest}`;
-            else if(tAspect==='perf') res=`${capS} ${p_have} ${v_pp} ${rest}`;
-            else res=`${capS} ${p_have} ${span('been','c-be')} ${v_ing} ${rest}`;
+            if(tAspect==='simple') res = isBe ? `${s} ${span(bP,'c-be')} ${r}`:`${s} ${v_pre} ${r}`;
+            else if(tAspect==='cont') res=`${s} ${span(bP,'c-be')} ${v_ing} ${r}`;
+            else if(tAspect==='perf') res=`${s} ${p_have} ${v_pp} ${r}`;
+            else res=`${s} ${p_have} ${span('been','c-be')} ${v_ing} ${r}`;
         } else if(tTime==='past'){
-            if(tAspect==='simple') res=`${capS} ${v_pst} ${rest}`;
-            else if(tAspect==='cont') res=`${capS} ${span(bPa,'c-be')} ${v_ing} ${rest}`;
-            else if(tAspect==='perf') res=`${capS} ${span('had','c-aux')} ${v_pp} ${rest}`;
-            else res=`${capS} ${span('had','c-aux')} ${span('been','c-be')} ${v_ing} ${rest}`;
+            if(tAspect==='simple') res=`${s} ${v_pst} ${r}`;
+            else if(tAspect==='cont') res=`${s} ${span(bPa,'c-be')} ${v_ing} ${r}`;
+            else if(tAspect==='perf') res=`${s} ${span('had','c-aux')} ${v_pp} ${r}`;
+            else res=`${s} ${span('had','c-aux')} ${span('been','c-be')} ${v_ing} ${r}`;
         } else {
-            if(tAspect==='simple') res=`${capS} ${p_will} ${isBe?span('be','c-be'):v} ${rest}`;
-            else if(tAspect==='cont') res=`${capS} ${p_will} ${span('be','c-be')} ${v_ing} ${rest}`;
-            else if(tAspect==='perf') res=`${capS} ${p_will} ${span('have','c-aux')} ${v_pp} ${rest}`;
-            else res=`${capS} ${p_will} ${span('have','c-aux')} ${span('been','c-be')} ${v_ing} ${rest}`;
+            if(tAspect==='simple') res=`${s} ${p_will} ${isBe?span('be','c-be'):v} ${r}`;
+            else if(tAspect==='cont') res=`${s} ${p_will} ${span('be','c-be')} ${v_ing} ${r}`;
+            else if(tAspect==='perf') res=`${s} ${p_will} ${span('have','c-aux')} ${v_pp} ${r}`;
+            else res=`${s} ${p_will} ${span('have','c-aux')} ${span('been','c-be')} ${v_ing} ${r}`;
         }
     } else if(currentMode==='neg'){
         if(tAspect==='simple'){
-            if(tTime==='future') res=`${capS} ${p_will} ${p_not} ${isBe?span('be','c-be'):v} ${rest}`;
-            else if(isBe) res=`${capS} ${span(tTime==='past'?bPa:bP,'c-be')} ${p_not} ${rest}`;
-            else res=`${capS} ${span(tTime==='past'?'did':(is3rd?'does':'do'),'c-aux')} ${p_not} ${v} ${rest}`;
+            if(tTime==='future') res=`${s} ${p_will} ${p_not} ${isBe?span('be','c-be'):v} ${r}`;
+            else if(isBe) res=`${s} ${span(tTime==='past'?bPa:bP,'c-be')} ${p_not} ${r}`;
+            else res=`${s} ${span(tTime==='past'?'did':(is3rd?'does':'do'),'c-aux')} ${p_not} ${v} ${r}`;
         } else {
             const hv = (tTime==='future')?p_will:(tTime==='past'?span('had','c-aux'):p_have);
-            if(tAspect==='cont') res=`${capS} ${tTime==='future'?p_will:span(tTime==='past'?bPa:bP,'c-be')} ${p_not} ${tTime==='future'?span('be','c-be'):""} ${v_ing} ${rest}`;
-            else if(tAspect==='perf') res=`${capS} ${hv} ${p_not} ${tTime==='future'?span('have','c-aux'):""} ${v_pp} ${rest}`;
-            else res=`${capS} ${hv} ${p_not} ${tTime==='future'?span('have been','c-be'):span('been','c-be')} ${v_ing} ${rest}`;
+            if(tAspect==='cont') res=`${s} ${tTime==='future'?p_will:span(tTime==='past'?bPa:bP,'c-be')} ${p_not} ${tTime==='future'?span('be','c-be'):""} ${v_ing} ${r}`;
+            else if(tAspect==='perf') res=`${s} ${hv} ${p_not} ${tTime==='future'?span('have','c-aux'):""} ${v_pp} ${r}`;
+            else res=`${s} ${hv} ${p_not} ${tTime==='future'?span('have been','c-be'):span('been','c-be')} ${v_ing} ${r}`;
         }
     } else {
         if (tTime === 'future') {
-            let core = (tAspect==='simple') ? `${isBe?span('be','c-be'):v} ${rest}` : (tAspect==='cont' ? `${span('be','c-be')} ${v_ing} ${rest}` : (tAspect==='perf' ? `${span('have','c-aux')} ${v_pp} ${rest}` : `${span('have been','c-be')} ${v_ing} ${rest}`));
+            let core = (tAspect==='simple')?`${isBe?span('be','c-be'):v} ${r}`:(tAspect==='cont'?`${span('be','c-be')} ${v_ing} ${r}`:(tAspect==='perf'?`${span('have','c-aux')} ${v_pp} ${r}`:`${span('have been','c-be')} ${v_ing} ${r}`));
             res = `${span('Will','c-aux')} ${s} ${core}?`;
         } else if (tAspect === 'perf' || tAspect === 'p_cont') {
             let hv = (tTime==='past') ? span('Had','c-aux') : span(cap(is3rd?'has':'have'),'c-aux');
-            let core = (tAspect === 'perf') ? `${v_pp} ${rest}` : `${span('been','c-be')} ${v_ing} ${rest}`;
+            let core = (tAspect === 'perf') ? `${v_pp} ${r}` : `${span('been','c-be')} ${v_ing} ${r}`;
             res = `${hv} ${s} ${core}?`;
         } else if (tAspect === 'cont') {
-            res = `${span(cap(tTime==='past' ? bPa : bP),'c-be')} ${s} ${v_ing} ${rest}?`;
+            res = `${span(cap(tTime==='past' ? bPa : bP),'c-be')} ${s} ${v_ing} ${r}?`;
         } else {
-            if (isBe) res = `${span(cap(tTime==='past'?bPa:bP),'c-be')} ${s} ${rest}?`;
-            else res = `${span(cap(tTime==='past'?'did':(is3rd?'does':'do')),'c-aux')} ${s} ${v} ${rest}?`;
+            if (isBe) res = `${span(cap(tTime==='past'?bPa:bP),'c-be')} ${s} ${r}?`;
+            else res = `${span(cap(tTime==='past'?'did':(is3rd?'does':'do')),'c-aux')} ${s} ${v} ${r}?`;
         }
     }
     document.getElementById('resultText').innerHTML = res.trim().replace(/\s+/g, " ") + (currentMode==='int'||res.includes('?')?"":".");
@@ -176,7 +256,11 @@ function convert(){
 function setMode(m,b){currentMode=m;setActive(b,'.button-group');convert()}
 function updateTense(t,a,b){tTime=t;tAspect=a;renderTenseButtons();convert()}
 function setActive(b,s){document.querySelectorAll(s+' button').forEach(x=>x.classList.remove('active'));b.classList.add('active')}
-window.onload=()=>{setLang('ja');};
+function setLang(l){currentLang=l;document.getElementById('btn-ja').classList.toggle('active',l==='ja');document.getElementById('btn-en').classList.toggle('active',l==='en');
+    document.getElementById('lbl-input').innerText=i18n[l].input;document.getElementById('lbl-result').innerText=i18n[l].result;document.getElementById('lbl-type').innerText=i18n[l].type;
+    document.getElementById('lbl-tense').innerText=i18n[l].tense;document.getElementById('mode-pos').innerText=i18n[l].pos;document.getElementById('mode-neg').innerText=i18n[l].neg;
+    document.getElementById('mode-int').innerText=i18n[l].int;document.getElementById('lbl-dict-title').innerText=i18n[l].dict;renderTenseButtons();convert();}
+window.onload=()=>{renderDict();setLang('ja');};
 </script>
 </body>
 </html>
