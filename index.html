@@ -67,14 +67,18 @@ button.active{background-color:var(--main);color:white}
     </div>
 </div>
 <script>
+// --- 基本設定 ---
 let currentMode='pos', tTime='present', tAspect='simple', currentLang='ja';
 let myDict = JSON.parse(localStorage.getItem('myTenseDict')) || {};
+
 const i18n = {
     ja: { title: "English Tense Puzzle Pro", input: "1. 例文を入力", result: "2. パズルの結果", type: "3. 文のタイプ", tense: "4. 時制を選択", pos: "肯定", neg: "否定", int: "疑問", present: "現在", past: "過去", future: "未来", simple: "形", cont: "進行", perf: "完了", p_cont: "完進", dict_add: "辞書に追加:" },
     en: { title: "English Tense Puzzle Pro", input: "1. Enter a sentence", result: "2. Puzzle Result", type: "3. Sentence Type", tense: "4. Select Tense", pos: "Affirmative", neg: "Negative", int: "Interrogative", present: "Pres.", past: "Past", future: "Fut.", simple: "Simp.", cont: "Cont.", perf: "Perf.", p_cont: "P-Cont", dict_add: "Add Verb:" }
 };
-const defaultIrregulars = {'become':{past:'became',pp:'become'},'begin':{past:'began',pp:'begun'},'bend':{past:'bent',pp:'bent'},'break':{past:'broke',pp:'broken'},'bring':{past:'brought',pp:'brought'},'build':{past:'built',pp:'built'},'buy':{past:'bought',pp:'bought'},'catch':{past:'caught',pp:'caught'},'choose':{past:'chose',pp:'chosen'},'come':{past:'came',pp:'come'},'cost':{past:'cost',pp:'cost'},'cut':{past:'cut',pp:'cut'},'do':{past:'did',pp:'done'},'draw':{past:'drew',pp:'drawn'},'drink':{past:'drank',pp:'drunk'},'drive':{past:'drove',pp:'driven'},'eat':{past:'ate',pp:'eaten'},'fall':{past:'fell',pp:'fallen'},'feel':{past:'felt',pp:'felt'},'find':{past:'found',pp:'found'},'fly':{past:'flew',pp:'flown'},'forget':{past:'forgot',pp:'forgotten'},'get':{past:'got',pp:'gotten'},'give':{past:'gave',pp:'given'},'go':{past:'went',pp:'gone'},'grow':{past:'grew',pp:'grown'},'have':{past:'had',pp:'had'},'hear':{past:'heard',pp:'heard'},'hide':{past:'hid',pp:'hidden'},'hit':{past:'hit',pp:'hit'},'hold':{past:'held',pp:'held'},'keep':{past:'kept',pp:'kept'},'know':{past:'knew',pp:'known'},'lead':{past:'led',pp:'led'},'leave':{past:'left',pp:'left'},'lend':{past:'lent',pp:'lent'},'let':{past:'let',pp:'let'},'lose':{past:'lost',pp:'lost'},'make':{past:'made',pp:'made'},'mean':{past:'meant',pp:'meant'},'meet':{past:'met',pp:'met'},'pay':{past:'paid',pp:'paid'},'put':{past:'put',pp:'put'},'read':{past:'read',pp:'read'},'ride':{past:'rode',pp:'ridden'},'run':{past:'ran',pp:'run'},'say':{past:'said',pp:'said'},'see':{past:'saw',pp:'seen'},'sell':{past:'sold',pp:'sold'},'send':{past:'sent',pp:'sent'},'shake':{past:'shook',pp:'shaken'},'shine':{past:'shone',pp:'shone'},'show':{past:'showed',pp:'shown'},'sing':{past:'sang',pp:'sung'},'sink':{past:'sank',pp:'sunk'},'sit':{past:'sat',pp:'sat'},'sleep':{past:'slept',pp:'slept'},'speak':{past:'spoke',pp:'spoken'},'spend':{past:'spent',pp:'spent'},'stand':{past:'stood',pp:'stood'},'steal':{past:'stole',pp:'stolen'},'swim':{past:'swam',pp:'swum'},'take':{past:'took',pp:'taken'},'teach':{past:'taught',pp:'taught'},'tell':{past:'told',pp:'told'},'think':{past:'thought',pp:'thought'},'throw':{past:'threw',pp:'thrown'},'understand':{past:'understood',pp:'understood'},'wake':{past:'woke',pp:'woken'},'wear':{past:'wore',pp:'worn'},'win':{past:'won',pp:'won'},'write':{past:'wrote',pp:'written'}};
 
+const defaultIrregulars = {'become':{past:'became',pp:'become'},'begin':{past:'began',pp:'beun'},'bend':{past:'bent',pp:'bent'},'break':{past:'broke',pp:'broken'},'bring':{past:'brought',pp:'brought'},'build':{past:'built',pp:'built'},'buy':{past:'bought',pp:'bought'},'catch':{past:'caught',pp:'caught'},'choose':{past:'chose',pp:'chosen'},'come':{past:'came',pp:'come'},'cost':{past:'cost',pp:'cost'},'cut':{past:'cut',pp:'cut'},'do':{past:'did',pp:'done'},'draw':{past:'drew',pp:'drawn'},'drink':{past:'drank',pp:'drunk'},'drive':{past:'drove',pp:'driven'},'eat':{past:'ate',pp:'eaten'},'fall':{past:'fell',pp:'fallen'},'feel':{past:'felt',pp:'felt'},'find':{past:'found',pp:'found'},'fly':{past:'flew',pp:'flown'},'forget':{past:'forgot',pp:'forgotten'},'get':{past:'got',pp:'gotten'},'give':{past:'gave',pp:'given'},'go':{past:'went',pp:'gone'},'grow':{past:'grew',pp:'grown'},'have':{past:'had',pp:'had'},'hear':{past:'heard',pp:'heard'},'hide':{past:'hid',pp:'hidden'},'hit':{past:'hit',pp:'hit'},'hold':{past:'held',pp:'held'},'keep':{past:'kept',pp:'kept'},'know':{past:'knew',pp:'known'},'lead':{past:'led',pp:'led'},'leave':{past:'left',pp:'left'},'lend':{past:'lent',pp:'lent'},'let':{past:'let',pp:'let'},'lose':{past:'lost',pp:'lost'},'make':{past:'made',pp:'made'},'mean':{past:'meant',pp:'meant'},'meet':{past:'met',pp:'met'},'pay':{past:'paid',pp:'paid'},'put':{past:'put',pp:'put'},'read':{past:'read',pp:'read'},'ride':{past:'rode',pp:'ridden'},'run':{past:'ran',pp:'run'},'say':{past:'said',pp:'said'},'see':{past:'saw',pp:'seen'},'sell':{past:'sold',pp:'sold'},'send':{past:'sent',pp:'sent'},'shake':{past:'shook',pp:'shaken'},'shine':{past:'shone',pp:'shone'},'show':{past:'showed',pp:'shown'},'sing':{past:'sang',pp:'sung'},'sink':{past:'sank',pp:'sunk'},'sit':{past:'sat',pp:'sat'},'sleep':{past:'slept',pp:'slept'},'speak':{past:'spoke',pp:'spoken'},'spend':{past:'spent',pp:'spent'},'stand':{past:'stood',pp:'stood'},'steal':{past:'stole',pp:'stolen'},'swim':{past:'swam',pp:'swum'},'take':{past:'took',pp:'taken'},'teach':{past:'taught',pp:'taught'},'tell':{past:'told',pp:'told'},'think':{past:'thought',pp:'thought'},'throw':{past:'threw',pp:'thrown'},'understand':{past:'understood',pp:'understood'},'wake':{past:'woke',pp:'woken'},'wear':{past:'wore',pp:'worn'},'win':{past:'won',pp:'won'},'write':{past:'wrote',pp:'written'}};
+
+// --- 辞書機能 ---
 function saveVerb(){
     const b = document.getElementById('d-base').value.trim().toLowerCase();
     const p = document.getElementById('d-past').value.trim().toLowerCase();
@@ -97,6 +101,8 @@ function renderDict(){
         list.appendChild(item);
     }
 }
+
+// --- 判定ロジック ---
 function isVerb(w) {
     if(!w) return false;
     let v = w.toLowerCase().replace(/[^a-z]/g, "");
@@ -104,7 +110,7 @@ function isVerb(w) {
     if (myDict[v] || defaultIrregulars[v]) return true;
     for (let b in myDict) if (myDict[b].past === v || myDict[b].pp === v) return true;
     for (let b in defaultIrregulars) if (defaultIrregulars[b].past === v || defaultIrregulars[b].pp === v) return true;
-    return false; // リストにないものは動詞とみなさない（tennis等を救済）
+    return false;
 }
 function getBaseVerb(v) {
     v = v.toLowerCase().replace(/[^a-z]/g, "");
@@ -123,6 +129,8 @@ function getBaseVerb(v) {
     }
     return v;
 }
+
+// --- パズル変換 ---
 function convert(){
     const rawInput=document.getElementById('userInput').value.trim();
     if(!rawInput) { document.getElementById('resultText').innerHTML = ""; return; }
@@ -139,7 +147,6 @@ function convert(){
         subjectArr.push(words[i]);
     }
     if(verbIdx === -1) { 
-        // 動詞が見つからない場合は変化させない
         document.getElementById('resultText').innerHTML = rawInput + (currentMode==='int'?"?":".");
         return; 
     }
@@ -206,25 +213,68 @@ function convert(){
             else res = `${span(cap(tTime==='past'?'did':(is3rd?'does':'do')),'c-aux')} ${s} ${v} ${r}?`;
         }
     }
-    document.getElementById('resultText').innerHTML = res.trim().replace(/\s+/g, " ") + (currentMode==='int'||res.includes('?')?"":".");
+    document.getElementById('resultText').innerHTML = res.trim().replace(/\s+/g, " ") + (currentMode==='int'?"":"");
 }
+
+// --- UI操作 ---
 const span=(t,c)=>`<span class="${c}">${t}</span>`, cap=(s)=>s.charAt(0).toUpperCase()+s.slice(1);
-function setMode(m,b){currentMode=m;setActive(b,'.button-group');convert()}
-function updateTense(t,a,b){tTime=t;tAspect=a;renderTenseButtons();convert()}
-function setActive(b,s){document.querySelectorAll(s+' button').forEach(x=>x.classList.remove('active'));b.classList.add('active')}
-function renderTenseButtons(){
-    const c = document.getElementById('tenseBtns'), t = i18n[currentLang]; c.innerHTML = '';
-    ['simple','cont','perf','p_cont'].forEach(a => { ['present','past','future'].forEach(ti => {
-        const btn = document.createElement('button'); btn.innerText = `${t[ti]}${t[a]}`;
-        if(ti === tTime && a === tAspect) btn.className = 'active';
-        btn.onclick = (e) => updateTense(ti, a, e.target); c.appendChild(btn);
-    }); });
+
+function setMode(m, elm){
+    currentMode = m;
+    document.querySelectorAll('.button-group button').forEach(b => b.classList.remove('active'));
+    elm.classList.add('active');
+    convert();
 }
-function setLang(l){currentLang=l;document.getElementById('btn-ja').classList.toggle('active',l==='ja');document.getElementById('btn-en').classList.toggle('active',l==='en');
-    document.getElementById('lbl-input').innerText=i18n[l].input;document.getElementById('lbl-result').innerText=i18n[l].result;document.getElementById('lbl-type').innerText=i18n[l].type;
-    document.getElementById('lbl-tense').innerText=i18n[l].tense;document.getElementById('mode-pos').innerText=i18n[l].pos;document.getElementById('mode-neg').innerText=i18n[l].neg;
-    document.getElementById('mode-int').innerText=i18n[l].int;document.getElementById('lbl-dict-add').innerText=i18n[l].dict_add;renderTenseButtons();convert();}
-window.onload=()=>{renderDict();renderTenseButtons();setLang('ja');};
+
+function updateTense(time, aspect){
+    tTime = time;
+    tAspect = aspect;
+    renderTenseButtons();
+    convert();
+}
+
+function renderTenseButtons(){
+    const container = document.getElementById('tenseBtns');
+    const t = i18n[currentLang];
+    container.innerHTML = '';
+    const aspects = ['simple', 'cont', 'perf', 'p_cont'];
+    const times = ['present', 'past', 'future'];
+
+    aspects.forEach(a => {
+        times.forEach(ti => {
+            const btn = document.createElement('button');
+            btn.innerText = `${t[ti]}${t[a]}`;
+            if(ti === tTime && a === tAspect) btn.classList.add('active');
+            btn.onclick = () => updateTense(ti, a);
+            container.appendChild(btn);
+        });
+    });
+}
+
+function setLang(l){
+    currentLang = l;
+    document.getElementById('btn-ja').classList.toggle('active', l==='ja');
+    document.getElementById('btn-en').classList.toggle('active', l==='en');
+    
+    document.getElementById('title').innerText = i18n[l].title;
+    document.getElementById('lbl-input').innerText = i18n[l].input;
+    document.getElementById('lbl-result').innerText = i18n[l].result;
+    document.getElementById('lbl-type').innerText = i18n[l].type;
+    document.getElementById('lbl-tense').innerText = i18n[l].tense;
+    document.getElementById('mode-pos').innerText = i18n[l].pos;
+    document.getElementById('mode-neg').innerText = i18n[l].neg;
+    document.getElementById('mode-int').innerText = i18n[l].int;
+    document.getElementById('lbl-dict-add').innerText = i18n[l].dict_add;
+
+    renderTenseButtons();
+    convert();
+}
+
+// 起動時
+window.onload = () => {
+    renderDict();
+    setLang('ja'); // ここでrenderTenseButtonsも実行されます
+};
 </script>
 </body>
 </html>
