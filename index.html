@@ -39,7 +39,7 @@ button.active{background-color:var(--main);color:white}
     </div>
     <h1 id="title">English Tense Puzzle Pro</h1>
     <div class="label" id="lbl-input">1. 例文を入力</div>
-    <input type="text" id="userInput" value="Mrs. Green plays tennis" oninput="convert()" onfocus="this.select()">
+    <input type="text" id="userInput" value="You play tennis" oninput="convert()" onfocus="this.select()">
     <div class="label" id="lbl-result">2. パズルの組み立て結果</div>
     <div class="result-box" id="resultText"></div>
     <div class="label" id="lbl-type">3. 文のタイプ</div>
@@ -67,7 +67,6 @@ button.active{background-color:var(--main);color:white}
     </div>
 </div>
 <script>
-// --- 基本設定 ---
 let currentMode='pos', tTime='present', tAspect='simple', currentLang='ja';
 let myDict = JSON.parse(localStorage.getItem('myTenseDict')) || {};
 
@@ -78,7 +77,8 @@ const i18n = {
 
 const defaultIrregulars = {'become':{past:'became',pp:'become'},'begin':{past:'began',pp:'beun'},'bend':{past:'bent',pp:'bent'},'break':{past:'broke',pp:'broken'},'bring':{past:'brought',pp:'brought'},'build':{past:'built',pp:'built'},'buy':{past:'bought',pp:'bought'},'catch':{past:'caught',pp:'caught'},'choose':{past:'chose',pp:'chosen'},'come':{past:'came',pp:'come'},'cost':{past:'cost',pp:'cost'},'cut':{past:'cut',pp:'cut'},'do':{past:'did',pp:'done'},'draw':{past:'drew',pp:'drawn'},'drink':{past:'drank',pp:'drunk'},'drive':{past:'drove',pp:'driven'},'eat':{past:'ate',pp:'eaten'},'fall':{past:'fell',pp:'fallen'},'feel':{past:'felt',pp:'felt'},'find':{past:'found',pp:'found'},'fly':{past:'flew',pp:'flown'},'forget':{past:'forgot',pp:'forgotten'},'get':{past:'got',pp:'gotten'},'give':{past:'gave',pp:'given'},'go':{past:'went',pp:'gone'},'grow':{past:'grew',pp:'grown'},'have':{past:'had',pp:'had'},'hear':{past:'heard',pp:'heard'},'hide':{past:'hid',pp:'hidden'},'hit':{past:'hit',pp:'hit'},'hold':{past:'held',pp:'held'},'keep':{past:'kept',pp:'kept'},'know':{past:'knew',pp:'known'},'lead':{past:'led',pp:'led'},'leave':{past:'left',pp:'left'},'lend':{past:'lent',pp:'lent'},'let':{past:'let',pp:'let'},'lose':{past:'lost',pp:'lost'},'make':{past:'made',pp:'made'},'mean':{past:'meant',pp:'meant'},'meet':{past:'met',pp:'met'},'pay':{past:'paid',pp:'paid'},'put':{past:'put',pp:'put'},'read':{past:'read',pp:'read'},'ride':{past:'rode',pp:'ridden'},'run':{past:'ran',pp:'run'},'say':{past:'said',pp:'said'},'see':{past:'saw',pp:'seen'},'sell':{past:'sold',pp:'sold'},'send':{past:'sent',pp:'sent'},'shake':{past:'shook',pp:'shaken'},'shine':{past:'shone',pp:'shone'},'show':{past:'showed',pp:'shown'},'sing':{past:'sang',pp:'sung'},'sink':{past:'sank',pp:'sunk'},'sit':{past:'sat',pp:'sat'},'sleep':{past:'slept',pp:'slept'},'speak':{past:'spoke',pp:'spoken'},'spend':{past:'spent',pp:'spent'},'stand':{past:'stood',pp:'stood'},'steal':{past:'stole',pp:'stolen'},'swim':{past:'swam',pp:'swum'},'take':{past:'took',pp:'taken'},'teach':{past:'taught',pp:'taught'},'tell':{past:'told',pp:'told'},'think':{past:'thought',pp:'thought'},'throw':{past:'threw',pp:'thrown'},'understand':{past:'understood',pp:'understood'},'wake':{past:'woke',pp:'woken'},'wear':{past:'wore',pp:'worn'},'win':{past:'won',pp:'won'},'write':{past:'wrote',pp:'written'}};
 
-// --- 辞書機能 ---
+const nounGuard = /^(tennis|soccer|apple|book|pen|table|car|school|house|water|rice|milk|money|friend|dog|cat|time|day|night|morning|evening|home|music)$/i;
+
 function saveVerb(){
     const b = document.getElementById('d-base').value.trim().toLowerCase();
     const p = document.getElementById('d-past').value.trim().toLowerCase();
@@ -102,16 +102,19 @@ function renderDict(){
     }
 }
 
-// --- 判定ロジック ---
 function isVerb(w) {
     if(!w) return false;
     let v = w.toLowerCase().replace(/[^a-z]/g, "");
+    if (nounGuard.test(v)) return false;
     if (/^(am|is|are|was|were|be|do|does|did|has|have|had|will)$/.test(v)) return true;
     if (myDict[v] || defaultIrregulars[v]) return true;
     for (let b in myDict) if (myDict[b].past === v || myDict[b].pp === v) return true;
     for (let b in defaultIrregulars) if (defaultIrregulars[b].past === v || defaultIrregulars[b].pp === v) return true;
+    if (v.endsWith('ing') || v.endsWith('ed') || (v.endsWith('s') && !v.endsWith('ss'))) return true;
+    if (v.length >= 3 && !nounGuard.test(v)) return true; // 一般動詞の救済判定
     return false;
 }
+
 function getBaseVerb(v) {
     v = v.toLowerCase().replace(/[^a-z]/g, "");
     if (/^(am|is|are|was|were|be)$/.test(v)) return 'be';
@@ -130,13 +133,13 @@ function getBaseVerb(v) {
     return v;
 }
 
-// --- パズル変換 ---
 function convert(){
     const rawInput=document.getElementById('userInput').value.trim();
     if(!rawInput) { document.getElementById('resultText').innerHTML = ""; return; }
     const words = rawInput.replace(/\?|!$/g,"").split(/\s+/);
     let subjectArr = [], verbIdx = -1;
     const honorifics = /^(mr\.|mrs\.|ms\.|miss|dr\.|prof\.|rev\.|capt\.|sir|madam)$/i;
+
     for(let i=0; i<words.length; i++) {
         if(honorifics.test(words[i]) && i+1 < words.length) {
             subjectArr.push(words[i], words[i+1]); i++;
@@ -213,10 +216,9 @@ function convert(){
             else res = `${span(cap(tTime==='past'?'did':(is3rd?'does':'do')),'c-aux')} ${s} ${v} ${r}?`;
         }
     }
-    document.getElementById('resultText').innerHTML = res.trim().replace(/\s+/g, " ") + (currentMode==='int'?"":"");
+    document.getElementById('resultText').innerHTML = res.trim().replace(/\s+/g, " ");
 }
 
-// --- UI操作 ---
 const span=(t,c)=>`<span class="${c}">${t}</span>`, cap=(s)=>s.charAt(0).toUpperCase()+s.slice(1);
 
 function setMode(m, elm){
@@ -227,8 +229,7 @@ function setMode(m, elm){
 }
 
 function updateTense(time, aspect){
-    tTime = time;
-    tAspect = aspect;
+    tTime = time; tAspect = aspect;
     renderTenseButtons();
     convert();
 }
@@ -239,7 +240,6 @@ function renderTenseButtons(){
     container.innerHTML = '';
     const aspects = ['simple', 'cont', 'perf', 'p_cont'];
     const times = ['present', 'past', 'future'];
-
     aspects.forEach(a => {
         times.forEach(ti => {
             const btn = document.createElement('button');
@@ -255,25 +255,18 @@ function setLang(l){
     currentLang = l;
     document.getElementById('btn-ja').classList.toggle('active', l==='ja');
     document.getElementById('btn-en').classList.toggle('active', l==='en');
-    
-    document.getElementById('title').innerText = i18n[l].title;
-    document.getElementById('lbl-input').innerText = i18n[l].input;
-    document.getElementById('lbl-result').innerText = i18n[l].result;
-    document.getElementById('lbl-type').innerText = i18n[l].type;
-    document.getElementById('lbl-tense').innerText = i18n[l].tense;
-    document.getElementById('mode-pos').innerText = i18n[l].pos;
-    document.getElementById('mode-neg').innerText = i18n[l].neg;
-    document.getElementById('mode-int').innerText = i18n[l].int;
+    ['title','lbl-input','lbl-result','lbl-type','lbl-tense','mode-pos','mode-neg','mode-int','lbl-dict-add'].forEach(id => {
+        if(document.getElementById(id)) document.getElementById(id).innerText = i18n[l][id.replace('lbl-','').replace('mode-','')];
+    });
+    // 特殊対応
     document.getElementById('lbl-dict-add').innerText = i18n[l].dict_add;
-
     renderTenseButtons();
     convert();
 }
 
-// 起動時
 window.onload = () => {
     renderDict();
-    setLang('ja'); // ここでrenderTenseButtonsも実行されます
+    setLang('ja');
 };
 </script>
 </body>
