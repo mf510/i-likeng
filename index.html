@@ -22,11 +22,9 @@ input[type="text"]:focus{border-color: var(--main); outline: none;}
 .button-group{display:grid;grid-template-columns:repeat(3,1fr);gap:5px;margin-bottom:8px}
 .label{font-size:0.7rem;color:#606770;margin:8px 0 4px 0;font-weight:bold}
 
-/* 時制マトリックス */
 .tense-matrix { display: flex; flex-direction: column; gap: 4px; }
 .tense-row { display: flex; align-items: center; gap: 4px; }
 .aspect-label { flex: 0 0 65px; font-size: 0.65rem; font-weight: bold; color: #444; background: #eee; padding: 8px 2px; border-radius: 4px; text-align: center; transition: 0.2s; border: none; }
-/* 選択中のアスペクト（左側）を緑に */
 .aspect-label.active { background-color: var(--part); color: white; }
 
 .time-btns { display: flex; flex: 1; gap: 4px; }
@@ -70,7 +68,7 @@ input[type="text"]:focus{border-color: var(--main); outline: none;}
     <div class="tense-matrix" id="tenseMatrix"></div>
 
     <div class="dict-section">
-        <div class="label" id="lbl-dict">5. 動詞を追加</div>
+        <div class="label" id="lbl-dict">5. 動詞を追加？</div>
         <div class="dict-row">
             <input type="text" id="d-base" placeholder="原形">
             <input type="text" id="d-past" placeholder="過去">
@@ -89,8 +87,8 @@ let myDict = JSON.parse(localStorage.getItem('myTenseDict')) || {};
 let lastValue = "You play tennis";
 
 const i18n = {
-    ja: { title: "English Tense Puzzle", input: "1. 例文入力", result: "2. パズルの結果", type: "3. 文のタイプ", tense: "4. 時制を選択", dict: "5. 動詞を追加", pos: "肯定", neg: "否定", int: "疑問", present: "現在", past: "過去", future: "未来", simple: "基本形", cont: "進行形", perf: "完了形", p_cont: "完進形", d_base: "原形", d_past: "過去", d_pp: "過去分", d_s: "-s", d_ing: "-ing" },
-    en: { title: "English Tense Puzzle", input: "1. Sentence", result: "2. Result", type: "3. Type", tense: "4. Tense", dict: "5. Add Verb", pos: "Aff.", neg: "Neg.", int: "Int.", present: "Pres.", past: "Past", future: "Fut.", simple: "Simple", cont: "Cont.", perf: "Perf.", p_cont: "P-Cont", d_base: "Base", d_past: "Past", d_pp: "P.P.", d_s: "-s", d_ing: "-ing" }
+    ja: { title: "English Tense Puzzle", input: "1. 例文入力", result: "2. パズルの結果", type: "3. 文のタイプ", tense: "4. 時制を選択", dict: "5. 動詞を追加？", pos: "肯定", neg: "否定", int: "疑問", present: "現在", past: "過去", future: "未来", simple: "基本形", cont: "進行形", perf: "完了形", p_cont: "完進形", d_base: "原形", d_past: "過去", d_pp: "過去分", d_s: "-s", d_ing: "-ing" },
+    en: { title: "English Tense Puzzle", input: "1. Sentence", result: "2. Result", type: "3. Type", tense: "4. Tense", dict: "5. Add Verb?", pos: "Aff.", neg: "Neg.", int: "Int.", present: "Pres.", past: "Past", future: "Fut.", simple: "Simple", cont: "Cont.", perf: "Perf.", p_cont: "P-Cont", d_base: "Base", d_past: "Past", d_pp: "P.P.", d_s: "-s", d_ing: "-ing" }
 };
 
 function handleFocus(elm) { lastValue = elm.value; elm.value = ""; }
@@ -233,16 +231,12 @@ function renderTenseMatrix(){
     matrix.innerHTML = '';
     const aspects = ['simple', 'cont', 'perf', 'p_cont'];
     const times = ['present', 'past', 'future'];
-    
     aspects.forEach(a => {
         const row = document.createElement('div'); row.className = 'tense-row';
-        
-        // アスペクトのラベル（ボタンとして実装して光るように）
         const label = document.createElement('div'); 
         label.className = 'aspect-label' + (a === tAspect ? ' active' : '');
         label.innerText = t[a];
         row.appendChild(label);
-        
         const btns = document.createElement('div'); btns.className = 'time-btns';
         times.forEach(ti => {
             const btn = document.createElement('button');
