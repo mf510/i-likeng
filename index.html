@@ -153,7 +153,7 @@ function convert(){
     let s = (rawS.toLowerCase() === 'i') ? 'I' : (rawS.toLowerCase() === 'you' ? 'You' : rawS);
     let v_in = words[verbIdx], v = getBaseVerb(v_in), r = words.slice(verbIdx + 1).join(" ");
     const isBe = (v === 'be'), s_low = rawS.toLowerCase();
-    const is3rd = honorifics.test(subjectArr[0]) || /he|she|it/i.test(s_low) || (s_low!=='i' && s_low!=='you' && !s_low.includes('and') && !s_low.endsWith('s'));
+    const is3rd = (honorifics.test(subjectArr[0]) || /he|she|it/i.test(s_low) || (s_low!=='i' && s_low!=='you' && !s_low.includes('and') && !s_low.endsWith('s'))) && s_low !== 'you' && s_low !== 'i';
     const p_will = span('will', 'c-aux'), p_not = span('not', 'c-aux');
     const bP=(s_low==='i')?'am':(is3rd?'is':'are'), bPa=(s_low==='i'||is3rd)?'was':'were';
     const p_have = (is3rd && tTime==='present') ? span('has','c-aux') : (tTime==='past' ? span('had','c-aux') : span('have','c-aux'));
@@ -271,3 +271,4 @@ window.onload = () => {
 </script>
 </body>
 </html>
+
