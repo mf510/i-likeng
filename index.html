@@ -15,13 +15,13 @@ h1{margin:0;font-size:1.1rem;color:var(--main);flex-grow:1}
 .lang-btn{padding:3px 8px;font-size:0.7rem;cursor:pointer;border:1px solid #ddd;border-radius:4px;background:#fff}
 .lang-btn.active{background:var(--main);color:white;border-color:var(--main)}
 
-input[type="text"]{width:100%;padding:10px;margin:5px 0;border:2px solid #ddd;border-radius:10px;box-sizing:border-box;font-size:1rem;text-align:center}
+input[type="text"]{width:100%;padding:10px;margin:5px 0;border:2px solid #ddd;border-radius:10px;box-sizing:border-box;font-size:1rem;text-align:center;transition: border-color 0.3s;}
+input[type="text"]:focus{border-color: var(--main); outline: none;}
 .result-box{background:#f8f9fa;border:2px dashed var(--main);padding:12px;margin:5px 0;font-weight:bold;color:#333;font-size:1.1rem;border-radius:10px;text-align:center;min-height:1.2em;line-height:1.3}
 
 .button-group{display:grid;grid-template-columns:repeat(3,1fr);gap:5px;margin-bottom:8px}
 .label{font-size:0.7rem;color:#606770;margin:8px 0 4px 0;font-weight:bold}
 
-/* 時制マトリックス・レイアウト */
 .tense-matrix { display: flex; flex-direction: column; gap: 4px; }
 .tense-row { display: flex; align-items: center; gap: 4px; }
 .aspect-label { flex: 0 0 65px; font-size: 0.65rem; font-weight: bold; color: #444; background: #eee; padding: 6px 2px; border-radius: 4px; text-align: center; }
@@ -34,7 +34,7 @@ input[type="text"]{width:100%;padding:10px;margin:5px 0;border:2px solid #ddd;bo
 .dict-section{margin-top:20px;padding-top:10px;border-top:1px dotted #eee}
 .dict-row{display:flex;gap:3px;margin-bottom:4px}
 .dict-row input{flex:1;padding:6px;font-size:0.7rem;border:1px solid #ccc;border-radius:4px;text-align:center;min-width:0}
-.add-btn{background:var(--part);color:white;padding:5px 10px;border-radius:4px;font-size:0.7rem}
+.add-btn{background:var(--part);color:white;padding:5px 10px;border-radius:4px;font-size:0.7rem; font-weight: bold;}
 .dict-list{max-height:80px;overflow-y:auto;font-size:0.65rem;margin-top:5px}
 .dict-item{display:flex;justify-content:space-between;padding:3px;border-bottom:1px solid #f0f0f0}
 </style>
@@ -50,7 +50,7 @@ input[type="text"]{width:100%;padding:10px;margin:5px 0;border:2px solid #ddd;bo
     </div>
 
     <div class="label" id="lbl-input">1. 例文入力</div>
-    <input type="text" id="userInput" value="You play tennis" oninput="convert()" onfocus="this.select()">
+    <input type="text" id="userInput" value="You play tennis" oninput="convert()" onfocus="handleFocus(this)" onblur="handleBlur(this)">
     
     <div class="label" id="lbl-result">2. パズルの結果</div>
     <div class="result-box" id="resultText"></div>
@@ -66,6 +66,7 @@ input[type="text"]{width:100%;padding:10px;margin:5px 0;border:2px solid #ddd;bo
     <div class="tense-matrix" id="tenseMatrix"></div>
 
     <div class="dict-section">
+        <div class="label" id="lbl-dict">5. 動詞を追加</div>
         <div class="dict-row">
             <input type="text" id="d-base" placeholder="原形">
             <input type="text" id="d-past" placeholder="過去">
@@ -81,10 +82,27 @@ input[type="text"]{width:100%;padding:10px;margin:5px 0;border:2px solid #ddd;bo
 <script>
 let currentMode='pos', tTime='present', tAspect='simple', currentLang='ja';
 let myDict = JSON.parse(localStorage.getItem('myTenseDict')) || {};
+let lastValue = "You play tennis";
+
 const i18n = {
-    ja: { title: "English Tense Puzzle", input: "1. 例文入力", result: "2. パズルの結果", type: "3. 文のタイプ", tense: "4. 時制を選択", pos: "肯定", neg: "否定", int: "疑問", present: "現在", past: "過去", future: "未来", simple: "基本形", cont: "進行形", perf: "完了形", p_cont: "完進形" },
-    en: { title: "English Tense Puzzle", input: "1. Sentence", result: "2. Result", type: "3. Type", tense: "4. Tense", pos: "Aff.", neg: "Neg.", int: "Int.", present: "Pres.", past: "Past", future: "Fut.", simple: "Simple", cont: "Cont.", perf: "Perf.", p_cont: "P-Cont" }
+    ja: { title: "English Tense Puzzle", input: "1. 例文入力", result: "2. パズルの結果", type: "3. 文のタイプ", tense: "4. 時制を選択", dict: "5. 動詞を追加", pos: "肯定", neg: "否定", int: "疑問", present: "現在", past: "過去", future: "未来", simple: "基本形", cont: "進行形", perf: "完了形", p_cont: "完進形" },
+    en: { title: "English Tense Puzzle", input: "1. Sentence", result: "2. Result", type: "3. Type", tense: "4. Tense", dict: "5. Add Verb", pos: "Aff.", neg: "Neg.", int: "Int.", present: "Pres.", past: "Past", future: "Fut.", simple: "Simple", cont: "Cont.", perf: "Perf.", p_cont: "P-Cont" }
 };
+
+// ---------------- 入力欄の制御 ----------------
+function handleFocus(elm) {
+    lastValue = elm.value;
+    elm.value = "";
+}
+
+function handleBlur(elm) {
+    if (elm.value === "") {
+        elm.value = lastValue;
+        convert();
+    }
+}
+// --------------------------------------------
+
 const defaultIrregulars = {'become':{past:'became',pp:'become'},'begin':{past:'began',pp:'begun'},'break':{past:'broke',pp:'broken'},'bring':{past:'brought',pp:'brought'},'buy':{past:'bought',pp:'bought'},'catch':{past:'caught',pp:'caught'},'choose':{past:'chose',pp:'chosen'},'come':{past:'came',pp:'come'},'do':{past:'did',pp:'done'},'draw':{past:'drew',pp:'drawn'},'drink':{past:'drank',pp:'drunk'},'drive':{past:'drove',pp:'driven'},'eat':{past:'ate',pp:'eaten'},'feel':{past:'felt',pp:'felt'},'find':{past:'found',pp:'found'},'get':{past:'got',pp:'gotten'},'give':{past:'gave',pp:'given'},'go':{past:'went',pp:'gone'},'grow':{past:'grew',pp:'grown'},'have':{past:'had',pp:'had'},'hear':{past:'heard',pp:'heard'},'know':{past:'knew',pp:'known'},'leave':{past:'left',pp:'left'},'make':{past:'made',pp:'made'},'meet':{past:'met',pp:'met'},'pay':{past:'paid',pp:'paid'},'put':{past:'put',pp:'put'},'read':{past:'read',pp:'read'},'run':{past:'ran',pp:'run'},'say':{past:'said',pp:'said'},'see':{past:'saw',pp:'seen'},'send':{past:'sent',pp:'sent'},'sing':{past:'sang',pp:'sung'},'sit':{past:'sat',pp:'sat'},'sleep':{past:'slept',pp:'slept'},'speak':{past:'spoke',pp:'spoken'},'take':{past:'took',pp:'taken'},'teach':{past:'taught',pp:'taught'},'tell':{past:'told',pp:'told'},'think':{past:'thought',pp:'thought'},'write':{past:'written',pp:'written'}};
 
 function saveVerb(){
@@ -100,7 +118,9 @@ function saveVerb(){
     ['d-base','d-past','d-pp','d-s','d-ing'].forEach(id=>document.getElementById(id).value='');
     convert();
 }
+
 function deleteVerb(b){ delete myDict[b]; localStorage.setItem('myTenseDict', JSON.stringify(myDict)); renderDict(); convert(); }
+
 function renderDict(){
     const list = document.getElementById('dictList'); list.innerHTML = '';
     for(let b in myDict){
@@ -175,7 +195,7 @@ function convert(){
         } else if(tTime==='past'){
             if(tAspect==='simple') res = isBe?`${subjectOrig} ${span(bePa,'c-be')} ${n} ${rest}`:`${subjectOrig} ${span('did','c-aux')} ${n} ${vBase} ${rest}`;
             else if(tAspect==='cont') res = `${subjectOrig} ${span(bePa,'c-be')} ${n} ${span(v_ing,'c-v')} ${rest}`;
-            else if(tAspect==='perf') res = `${subjectOrig} ${span('had','had','c-aux')} ${n} ${span(v_pp,'c-v')} ${rest}`;
+            else if(tAspect==='perf') res = `${subjectOrig} ${span('had','c-aux')} ${n} ${span(v_pp,'c-v')} ${rest}`;
             else res = `${subjectOrig} ${span('had','c-aux')} ${n} ${span('been','c-be')} ${span(v_ing,'c-v')} ${rest}`;
         } else {
             let a = `${span('will','c-aux')} ${n}`;
@@ -243,7 +263,7 @@ function renderTenseMatrix(){
 
 function setLang(l){
     currentLang = l; document.getElementById('btn-ja').classList.toggle('active', l==='ja'); document.getElementById('btn-en').classList.toggle('active', l==='en');
-    ['title','lbl-input','lbl-result','lbl-type','lbl-tense','mode-pos','mode-neg','mode-int'].forEach(id => {
+    ['title','lbl-input','lbl-result','lbl-type','lbl-tense','lbl-dict','mode-pos','mode-neg','mode-int'].forEach(id => {
         let key = id.replace('lbl-','').replace('mode-',''); if(document.getElementById(id)) document.getElementById(id).innerText = i18n[l][key];
     });
     renderTenseMatrix(); convert();
