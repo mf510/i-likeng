@@ -3,14 +3,22 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-<title>English Tense Puzzle Pro</title>
+<title>Puzzle for English Tense</title>
+
+<link rel="manifest" href="manifest.json">
+<link rel="icon" type="image/png" sizes="192x192" href="icon-192.png">
+<link rel="icon" type="image/png" sizes="512x512" href="icon-512.png">
+<link rel="apple-touch-icon" href="icon-192.png">
+<meta name="theme-color" content="#ffa502">
+
 <style>
 :root { --main: #007bff; --accent: #ff4757; --part: #2ed573; --aux: #ffa502; --bg: #f0f2f5; }
 body{font-family:'Segoe UI',Meiryo,sans-serif;background-color:var(--bg);padding:8px;color:#1c1e21;margin:0;padding-bottom:30px}
 .container{max-width:600px;margin:auto;background:white;padding:15px;border-radius:15px;box-shadow:0 5px 15px rgba(0,0,0,0.1)}
 
 .header-row{display:flex;justify-content:space-between;align-items:center;margin-bottom:10px}
-h1{margin:0;font-size:1.1rem;color:var(--main);flex-grow:1}
+/* タイトル文字が長くなったので少し小さく調整 */
+h1{margin:0;font-size:1.05rem;color:var(--main);flex-grow:1}
 .lang-switch{display:flex;gap:2px}
 .lang-btn{padding:3px 8px;font-size:0.7rem;cursor:pointer;border:1px solid #ddd;border-radius:4px;background:#fff}
 .lang-btn.active{background:var(--main);color:white;border-color:var(--main)}
@@ -24,7 +32,7 @@ input[type="text"]:focus{border-color: var(--main); outline: none;}
 
 .tense-matrix { display: flex; flex-direction: column; gap: 4px; }
 .tense-row { display: flex; align-items: center; gap: 4px; }
-.aspect-label { flex: 0 0 65px; font-size: 0.65rem; font-weight: bold; color: #444; background: #eee; padding: 8px 2px; border-radius: 4px; text-align: center; transition: 0.2s; border: none; }
+.aspect-label { flex: 0 0 65px; font-size: 0.65rem; font-weight: bold; color: #444; background: #eee; padding: 6px 2px; border-radius: 4px; text-align: center; transition: 0.2s; border: none; }
 .aspect-label.active { background-color: var(--part); color: white; }
 
 .time-btns { display: flex; flex: 1; gap: 4px; }
@@ -64,7 +72,7 @@ input[type="text"]:focus{border-color: var(--main); outline: none;}
 
 <div class="container">
     <div class="header-row">
-        <h1 id="title">English Tense Puzzle</h1>
+        <h1 id="title">Puzzle for English Tense</h1>
         <div class="lang-switch">
             <button id="btn-ja" class="lang-btn active" onclick="setLang('ja')">JP</button>
             <button id="btn-en" class="lang-btn" onclick="setLang('en')">EN</button>
@@ -112,8 +120,8 @@ let myDict = JSON.parse(localStorage.getItem('myTenseDict')) || {};
 let lastValue = "You play tennis";
 
 const i18n = {
-    ja: { title: "English Tense Puzzle", input: "1. 例文入力", result: "2. パズルの結果", type: "3. 文のタイプ", tense: "4. 時制を選択", dict: "5. 動詞を追加", pos: "肯定", neg: "否定", int: "疑問", present: "現在", past: "過去", future: "未来", simple: "基本形", cont: "進行形", perf: "完了形", p_cont: "完進形", d_base: "原形", d_past: "過去", d_pp: "過去分", d_s: "-s", d_ing: "-ing", helpT: "マイ辞書の使い方", help: "アプリが対応していない動詞や、特殊な変化をする単語を登録できます。\n\n【登録例】\n原形: go\n過去: went\n過去分: gone\n-s: goes\n-ing: going\n\n登録すると、パズル変換に即座に反映されます。" },
-    en: { title: "English Tense Puzzle", input: "1. Sentence", result: "2. Result", type: "3. Type", tense: "4. Tense", dict: "5. Add Verb", pos: "Aff.", neg: "Neg.", int: "Int.", present: "Pres.", past: "Past", future: "Fut.", simple: "Simple", cont: "Cont.", perf: "Perf.", p_cont: "P-Cont", d_base: "Base", d_past: "Past", d_pp: "P.P.", d_s: "-s", d_ing: "-ing", helpT: "How to use", help: "You can register verbs that the app doesn't support yet.\n\n[Example]\nBase: go\nPast: went\nPP: gone\n-s: goes\n-ing: going\n\nRegistered verbs are applied to the puzzle immediately." }
+    ja: { title: "Puzzle for English Tense", input: "1. 例文入力", result: "2. パズルの結果", type: "3. 文のタイプ", tense: "4. 時制を選択", dict: "5. 動詞を追加", pos: "肯定", neg: "否定", int: "疑問", present: "現在", past: "過去", future: "未来", simple: "基本形", cont: "進行形", perf: "完了形", p_cont: "完進形", d_base: "原形", d_past: "過去", d_pp: "過去分", d_s: "-s", d_ing: "-ing", helpT: "マイ辞書の使い方", help: "アプリが対応していない動詞や、特殊な変化をする単語を登録できます。\n\n【登録例】\n原形: go\n過去: went\n過去分: gone\n-s: goes\n-ing: going\n\n登録すると、パズル変換に即座に反映されます。" },
+    en: { title: "Puzzle for English Tense", input: "1. Sentence", result: "2. Result", type: "3. Type", tense: "4. Tense", dict: "5. Add Verb", pos: "Aff.", neg: "Neg.", int: "Int.", present: "Pres.", past: "Past", future: "Fut.", simple: "Simple", cont: "Cont.", perf: "Perf.", p_cont: "P-Cont", d_base: "Base", d_past: "Past", d_pp: "P.P.", d_s: "-s", d_ing: "-ing", helpT: "How to use", help: "You can register verbs that the app doesn't support yet.\n\n[Example]\nBase: go\nPast: went\nPP: gone\n-s: goes\n-ing: going\n\nRegistered verbs are applied to the puzzle immediately." }
 };
 
 // モーダル制御
@@ -205,7 +213,7 @@ function convert(){
             let fB = isBe?span('be','c-be'):vBase;
             if(tAspect==='simple') res = `${subjectOrig} ${span('will','c-aux')} ${fB} ${rest}`;
             else if(tAspect==='cont') res = `${subjectOrig} ${span('will','c-aux')} ${span('be','c-be')} ${span(v_ing,'c-v')} ${rest}`;
-            else if(tAspect==='perf') res = `${subjectOrig} ${span('will','c-aux')} ${span('have','c-aux')} ${span(v_pp,'c-v')} ${rest}`;
+            else if(tAspect==='perf) res = `${subjectOrig} ${span('will','c-aux')} ${span('have','c-aux')} ${span(v_pp,'c-v')} ${rest}`;
             else res = `${subjectOrig} ${span('will','c-aux')} ${span('have','c-aux')} ${span('been','c-be')} ${span(v_ing,'c-v')} ${rest}`;
         }
     } else if(currentMode==='neg'){
@@ -295,6 +303,13 @@ function setLang(l){
     renderTenseMatrix(); convert();
 }
 window.onload = () => { renderDict(); setLang('ja'); };
+
+// Service Worker登録（PWA用）
+if ('serviceWorker' in navigator) {
+  navigator.serviceWorker.register('sw.js').then(() => {
+    console.log('Service Worker Registered');
+  });
+}
 </script>
 </body>
 </html>

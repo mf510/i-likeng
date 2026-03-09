@@ -1,0 +1,21 @@
+{
+  "name": "Puzzle for English Tense (PuEnT)",
+  "short_name": "PuEnT",
+  "description": "Intuitive puzzle app for visualizing and practicing English verb tenses.",
+  "start_url": "index.html",
+  "display": "standalone",
+  "background_color": "#f0f2f5",
+  "theme_color": "#ffa502",
+  "icons": [
+    {
+      "src": "icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png"
+    },
+    {
+      "src": "icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png"
+    }
+  ]
+}
