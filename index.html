@@ -79,8 +79,16 @@ input[type="text"]:focus{border-color: var(--main); outline: none;}
     </div>
 
     <div class="label" id="lbl-input">1. 例文入力</div>
-    <input type="text" id="userInput" value="You play tennis" oninput="convert()" onfocus="handleFocus(this)" onblur="handleBlur(this)">
+    <input type="text" id="userInput" value="You play tennis" list="example-list" oninput="convert()" onfocus="handleFocus(this)" onblur="handleBlur(this)">
     
+    <datalist id="example-list">
+        <option value="I write a letter.">
+        <option value="She cleans the room.">
+        <option value="He plays soccer.">
+        <option value="They eat an apple.">
+        <option value="He speaks English.">
+    </datalist>
+
     <div class="label" id="lbl-result">2. パズルの結果</div>
     <div class="result-box" id="resultText"></div>
     
@@ -119,8 +127,8 @@ let myDict = JSON.parse(localStorage.getItem('myTenseDict')) || {};
 let lastValue = "You play tennis";
 
 const i18n = {
-    ja: { title: "Puzzle for English Tense", input: "1. 例文入力", result: "2. パズルの結果", type: "3. 文의タイプ", tense: "4. 時制を選択", dict: "5. 動詞を追加", pos: "肯定", neg: "否定", int: "疑問", present: "現在", past: "過去", future: "未来", simple: "基本形", cont: "進行形", perf: "完了形", p_cont: "完進形", d_base: "原形", d_past: "過去", d_pp: "過去分", d_s: "-s", d_ing: "-ing", helpT: "マイ辞書の使い方", help: "アプリが対応していない動詞や、特殊な変化をする単語を登録できます。\n\n【登録例】\n原形: go\n過去: went\n過去分: gone\n-s: goes\n-ing: going\n\n登録すると、パズル変換に即座に反映されます。" },
-    en: { title: "Puzzle for English Tense", input: "1. Sentence", result: "2. Result", type: "3. Type", tense: "4. Tense", dict: "5. Add Verb", pos: "Aff.", neg: "Neg.", int: "Int.", present: "Pres.", past: "Past", future: "Fut.", simple: "Simple", cont: "Cont.", perf: "Perf.", p_cont: "P-Cont", d_base: "Base", d_past: "Past", d_pp: "P.P.", d_s: "-s", d_ing: "-ing", helpT: "How to use", help: "You can register verbs that the app doesn't support yet.\n\n[Example]\nBase: go\nPast: went\nPP: gone\n-s: goes\n-ing: going\n\nRegistered verbs are applied to the puzzle immediately." }
+    ja: { title: "Puzzle for English Tense", input: "1. 例文入力 (右端▼で選択)", result: "2. パズルの結果", type: "3. 文のタイプ", tense: "4. 時制を選択", dict: "5. 動詞を追加", pos: "肯定", neg: "否定", int: "疑問", present: "現在", past: "過去", future: "未来", simple: "基本形", cont: "進行形", perf: "完了形", p_cont: "完進形", d_base: "原形", d_past: "過去", d_pp: "過去分", d_s: "-s", d_ing: "-ing", helpT: "マイ辞書の使い方", help: "アプリが対応していない動詞や、特殊な変化をする単語を登録できます。\n\n【登録例】\n原形: go\n過去: went\n過去分: gone\n-s: goes\n-ing: going\n\n登録すると、パズル変換に即座に反映されます。" },
+    en: { title: "Puzzle for English Tense", input: "1. Sentence (Click ▼ to choose)", result: "2. Result", type: "3. Type", tense: "4. Tense", dict: "5. Add Verb", pos: "Aff.", neg: "Neg.", int: "Int.", present: "Pres.", past: "Past", future: "Fut.", simple: "Simple", cont: "Cont.", perf: "Perf.", p_cont: "P-Cont", d_base: "Base", d_past: "Past", d_pp: "P.P.", d_s: "-s", d_ing: "-ing", helpT: "How to use", help: "You can register verbs that the app doesn't support yet.\n\n[Example]\nBase: go\nPast: went\nPP: gone\n-s: goes\n-ing: going\n\nRegistered verbs are applied to the puzzle immediately." }
 };
 
 function showHelp() {
@@ -133,7 +141,7 @@ function closeHelp() { document.getElementById('helpModal').style.display = 'non
 function handleFocus(elm) { lastValue = elm.value; elm.value = ""; }
 function handleBlur(elm) { if (elm.value === "") { elm.value = lastValue; convert(); } }
 
-const defaultIrregulars = {'become':{past:'became',pp:'become'},'begin':{past:'began',pp:'begun'},'break':{past:'broke',pp:'broken'},'bring':{past:'brought',pp:'brought'},'buy':{past:'bought',pp:'bought'},'catch':{past:'caught',pp:'caught'},'choose':{past:'chose',pp:'chosen'},'come':{past:'came',pp:'come'},'do':{past:'did',pp:'done'},'draw':{past:'drew',pp:'drawn'},'drink':{past:'drank',pp:'drunk'},'drive':{past:'drove',pp:'driven'},'eat':{past:'ate',pp:'eaten'},'feel':{past:'felt',pp:'felt'},'find':{past:'found',pp:'found'},'get':{past:'got',pp:'gotten'},'give':{past:'gave',pp:'given'},'go':{past:'went',pp:'gone'},'grow':{past:'grew',pp:'grown'},'have':{past:'had',pp:'had'},'hear':{past:'heard',pp:'heard'},'know':{past:'knew',pp:'known'},'leave':{past:'left',pp:'left'},'make':{past:'made',pp:'made'},'meet':{past:'met',pp:'met'},'pay':{past:'paid',pp:'paid'},'put':{past:'put',pp:'put'},'read':{past:'read',pp:'read'},'run':{past:'ran',pp:'run'},'say':{past:'said',pp:'said'},'see':{past:'saw',pp:'seen'},'send':{past:'sent',pp:'sent'},'sing':{past:'sang',pp:'sung'},'sit':{past:'sat',pp:'sat'},'sleep':{past:'slept',pp:'slept'},'speak':{past:'spoke',pp:'spoken'},'take':{past:'took',pp:'taken'},'teach':{past:'taught',pp:'taught'},'tell':{past:'told',pp:'told'},'think':{past:'thought',pp:'thought'},'write':{past:'written',pp:'written'}};
+const defaultIrregulars = {'become':{past:'became',pp:'become'},'begin':{past:'began',pp:'begun'},'break':{past:'broke',pp:'broken'},'bring':{past:'brought',pp:'brought'},'buy':{past:'bought',pp:'bought'},'catch':{past:'caught',pp:'caught'},'choose':{past:'chose',pp:'chosen'},'come':{past:'came',pp:'come'},'do':{past:'did',pp:'done'},'draw':{past:'drew',pp:'drawn'},'drink':{past:'drank',pp:'drunk'},'drive':{past:'drove',pp:'driven'},'eat':{past:'ate',pp:'eaten'},'feel':{past:'felt',pp:'felt'},'find':{past:'found',pp:'found'},'get':{past:'got',pp:'gotten'},'give':{past:'gave',pp:'given'},'go':{past:'went',pp:'gone'},'grow':{past:'grew',pp:'grown'},'have':{past:'had',pp:'had'},'hear':{past:'heard',pp:'heard'},'know':{past:'knew',pp:'known'},'leave':{past:'left',pp:'left'},'make':{past:'made',pp:'made'},'meet':{past:'met',pp:'met'},'pay':{past:'paid',pp:'paid'},'put':{past:'put',pp:'put'},'read':{past:'read',pp:'read'},'run':{past:'ran',pp:'run'},'say':{past:'said',pp:'said'},'see':{past:'saw',pp:'seen'},'send':{past:'sent',pp:'sent'},'sing':{past:'sang',pp:'sung'},'sit':{past:'sat',pp:'sat'},'sleep':{past:'slept',pp:'slept'},'speak':{past:'spoke',pp:'spoken'},'take':{past:'took',pp:'taken'},'teach':{past:'taught',pp:'taught'},'tell':{past:'told',pp:'told'},'think':{past:'thought',pp:'thought'},'write':{past:'wrote',pp:'written'}};
 
 function saveVerb(){
     const b = document.getElementById('d-base').value.trim().toLowerCase();
